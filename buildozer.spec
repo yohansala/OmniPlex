@@ -29,3 +29,6 @@ android.min_api = 21
 
 # (bool) Use AndroidX
 android.androidx = True
+
+# (bool) Accept Android SDK licenses automatically
+android.accept_sdk_license = True
