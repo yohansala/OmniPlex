@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Neumórfica</title>
+  <style>
+    :root {
+      /* Modo Oscuro (Por defecto) */
+      --bg-color: #171d2a;
+      --card-bg: #1a2130;
+      --text-color: #ffffff;
+      --text-sub: #64748b;
+      --shadow-dark: #111620;
+      --shadow-light: #232c40;
+      --btn-danger: #ff5252;
+      --btn-op: #3b82f6;
+      --btn-equals-bg: #3b82f6;
+      --btn-equals-text: #ffffff;
+    }
+
+    [data-theme="light"] {
+      /* Modo Claro */
+      --bg-color: #e0e5ec;
+      --card-bg: #e0e5ec;
+      --text-color: #2d3748;
+      --text-sub: #a0aec0;
+      --shadow-dark: #a3b1c6;
+      --shadow-light: #ffffff;
+      --btn-danger: #e53e3e;
+      --btn-op: #2b6cb0;
+      --btn-equals-bg: #3182ce;
+      --btn-equals-text: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--bg-color);
+      padding: 15px;
+    }
+
+    .calculator-card {
+      width: 100%;
+      max-width: 360px;
+      background-color: var(--card-bg);
+      border-radius: 35px;
+      padding: 24px 20px 28px 20px;
+      box-shadow: 12px 12px 30px var(--shadow-dark), -12px -12px 30px var(--shadow-light);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Top Action Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: var(--card-bg);
+      box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.15s ease;
+    }
+
+    .icon-btn:active {
+      box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+    }
+
+    /* Screen Display */
+    .display-container {
+      width: 100%;
+      height: 110px;
+      background: var(--card-bg);
+      border-radius: 22px;
+      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+      padding: 15px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+
+    .history-text {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+      min-height: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    .main-text {
+      color: var(--text-color);
+      font-size: 2.8rem;
+      font-weight: 500;
+      word-break: break-all;
+      line-height: 1;
+    }
+
+    /* Keypad Grid */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .btn {
+      aspect-ratio: 1;
+      border-radius: 20px;
+      border: none;
+      background: var(--card-bg);
+      box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+      color: var(--text-color);
+      font-size: 1.35rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+      box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+      transform: scale(0.97);
+    }
+
+    .btn-danger {
+      color: var(--btn-danger);
+    }
+
+    .btn-op {
+      color: var(--btn-op);
+      font-size: 1.5rem;
+    }
+
+    .btn-equals {
+      background: var(--btn-equals-bg);
+      color: var(--btn-equals-text);
+      box-shadow: 4px 6px 18px rgba(59, 130, 246, 0.4), inset -2px -2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-equals:active {
+      box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .backspace-icon {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: var(--btn-danger);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Modal / Panel de Historial */
+    .history-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--card-bg);
+      border-radius: 35px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      transform: translateY(100%);
+      opacity: 0;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .history-panel.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      color: var(--text-color);
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 4px;
+    }
+
+    .history-item {
+      background: var(--card-bg);
+      padding: 12px 15px;
+      border-radius: 15px;
+      box-shadow: 3px 3px 8px var(--shadow-dark), -3px -3px 8px var(--shadow-light);
+      text-align: right;
+      cursor: pointer;
+    }
+
+    .history-item:active {
+      box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+    }
+
+    .history-item .expr {
+      color: var(--text-sub);
+      font-size: 0.85rem;
+    }
+
+    .history-item .res {
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .empty-history {
+      text-align: center;
+      color: var(--text-sub);
+      margin-top: 60px;
+      font-size: 0.95rem;
+    }
+
+    .clear-history-btn {
+      margin-top: 15px;
+      padding: 12px;
+      border: none;
+      border-radius: 15px;
+      background: var(--card-bg);
+      box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+      color: var(--btn-danger);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .clear-history-btn:active {
+      box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator-card">
+    <!-- Top Action Buttons -->
+    <div class="top-bar">
+      <button class="icon-btn" id="themeBtn" title="Cambiar Tema">🌙</button>
+      <button class="icon-btn" id="historyBtn" title="Historial">🕒</button>
+    </div>
+
+    <!-- Display -->
+    <div class="display-container">
+      <div class="history-text" id="history"></div>
+      <div class="main-text" id="display">0</div>
+    </div>
+
+    <!-- Keypad -->
+    <div class="keypad">
+      <!-- Row 1 -->
+      <button class="btn btn-danger" onclick="clearAll()">AC</button>
+      <button class="btn btn-danger" onclick="deleteLast()">
+        <svg class="backspace-icon" viewBox="0 0 24 24">
+          <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+          <line x1="18" y1="9" x2="12" y2="15"></line>
+          <line x1="12" y1="9" x2="18" y2="15"></line>
+        </svg>
+      </button>
+      <button class="btn btn-danger" onclick="appendOperator('%')">%</button>
+      <button class="btn btn-op" onclick="appendOperator('÷')">÷</button>
+
+      <!-- Row 2 -->
+      <button class="btn" onclick="appendNum('7')">7</button>
+      <button class="btn" onclick="appendNum('8')">8</button>
+      <button class="btn" onclick="appendNum('9')">9</button>
+      <button class="btn btn-op" onclick="appendOperator('×')">×</button>
+
+      <!-- Row 3 -->
+      <button class="btn" onclick="appendNum('4')">4</button>
+      <button class="btn" onclick="appendNum('5')">5</button>
+      <button class="btn" onclick="appendNum('6')">6</button>
+      <button class="btn btn-op" onclick="appendOperator('-')">-</button>
+
+      <!-- Row 4 -->
+      <button class="btn" onclick="appendNum('1')">1</button>
+      <button class="btn" onclick="appendNum('2')">2</button>
+      <button class="btn" onclick="appendNum('3')">3</button>
+      <button class="btn btn-op" onclick="appendOperator('+')">+</button>
+
+      <!-- Row 5 -->
+      <button class="btn btn-danger" onclick="toggleSign()">±</button>
+      <button class="btn" onclick="appendNum('0')">0</button>
+      <button class="btn" onclick="appendDecimal()">.</button>
+      <button class="btn btn-equals" onclick="calculate()">=</button>
+    </div>
+
+    <!-- Panel de Historial Deslizable -->
+    <div class="history-panel" id="historyPanel">
+      <div class="history-header">
+        <h3>Historial</h3>
+        <button class="icon-btn" id="closeHistoryBtn">✕</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-history">Sin cálculos recientes</div>
+      </div>
+      <button class="clear-history-btn" onclick="clearHistoryList()">Borrar Historial</button>
+    </div>
+  </div>
+
+  <script>
+    let currentInput = '0';
+    let previousInput = '';
+    let operator = null;
+    let shouldResetDisplay = false;
+    let calculationHistory = [];
+
+    const displayEl = document.getElementById('display');
+    const historyEl = document.getElementById('history');
+
+    function updateDisplay() {
+      displayEl.textContent = currentInput;
+    }
+
+    function appendNum(num) {
+      if (currentInput === '0' || shouldResetDisplay) {
+        currentInput = num;
+        shouldResetDisplay = false;
+      } else {
+        if (currentInput.length < 10) {
+          currentInput += num;
+        }
+      }
+      updateDisplay();
+    }
+
+    function appendDecimal() {
+      if (shouldResetDisplay) {
+        currentInput = '0.';
+        shouldResetDisplay = false;
+        updateDisplay();
+        return;
+      }
+      if (!currentInput.includes('.')) {
+        currentInput += '.';
+        updateDisplay();
+      }
+    }
+
+    function toggleSign() {
+      if (currentInput === '0') return;
+      if (currentInput.startsWith('-')) {
+        currentInput = currentInput.slice(1);
+      } else {
+        currentInput = '-' + currentInput;
+      }
+      updateDisplay();
+    }
+
+    function appendOperator(op) {
+      if (operator !== null && !shouldResetDisplay) {
+        calculate();
+      }
+      previousInput = currentInput;
+      operator = op;
+      shouldResetDisplay = true;
+      historyEl.textContent = `${previousInput} ${operator}`;
+    }
+
+    function calculate() {
+      if (operator === null || shouldResetDisplay) return;
+
+      let prev = parseFloat(previousInput);
+      let curr = parseFloat(currentInput);
+      let result = 0;
+
+      switch (operator) {
+        case '+': result = prev + curr; break;
+        case '-': result = prev - curr; break;
+        case '×': result = prev * curr; break;
+        case '÷': 
+          if (curr === 0) {
+            currentInput = 'Error';
+            updateDisplay();
+            shouldResetDisplay = true;
+            return;
+          }
+          result = prev / curr; 
+          break;
+        case '%': result = (prev * curr) / 100; break;
+      }
+
+      result = Math.round(result * 1e8) / 1e8;
+      
+      const fullExpr = `${previousInput} ${operator} ${currentInput} =`;
+      historyEl.textContent = fullExpr;
+
+      // Guardar en Historial
+      calculationHistory.push({ expr: fullExpr, result: String(result) });
+      renderHistory();
+
+      currentInput = String(result);
+      operator = null;
+      shouldResetDisplay = true;
+      updateDisplay();
+    }
+
+    function clearAll() {
+      currentInput = '0';
+      previousInput = '';
+      operator = null;
+      shouldResetDisplay = false;
+      historyEl.textContent = '';
+      updateDisplay();
+    }
+
+    function deleteLast() {
+      if (shouldResetDisplay) return;
+      if (currentInput.length === 1 || (currentInput.length === 2 && currentInput.startsWith('-'))) {
+        currentInput = '0';
+      } else {
+        currentInput = currentInput.slice(0, -1);
+      }
+      updateDisplay();
+    }
+
+    /* --- MODO CLARO / OSCURO --- */
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.addEventListener('click', () => {
+      const isLight = document.body.getAttribute('data-theme') === 'light';
+      if (isLight) {
+        document.body.removeAttribute('data-theme');
+        themeBtn.textContent = '🌙';
+      } else {
+        document.body.setAttribute('data-theme', 'light');
+        themeBtn.textContent = '☀️';
+      }
+    });
+
+    /* --- PANEL DE HISTORIAL --- */
+    const historyBtn = document.getElementById('historyBtn');
+    const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+    const historyPanel = document.getElementById('historyPanel');
+    const historyList = document.getElementById('historyList');
+
+    historyBtn.addEventListener('click', () => {
+      historyPanel.classList.add('active');
+    });
+
+    closeHistoryBtn.addEventListener('click', () => {
+      historyPanel.classList.remove('active');
+    });
+
+    function renderHistory() {
+      if (calculationHistory.length === 0) {
+        historyList.innerHTML = '<div class="empty-history">Sin cálculos recientes</div>';
+        return;
+      }
+
+      historyList.innerHTML = '';
+      [...calculationHistory].reverse().forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+          <div class="expr">${item.expr}</div>
+          <div class="res">${item.result}</div>
+        `;
+        div.addEventListener('click', () => {
+          currentInput = item.result;
+          shouldResetDisplay = true;
+          updateDisplay();
+          historyPanel.classList.remove('active');
+        });
+        historyList.appendChild(div);
+      });
+    }
+
+    function clearHistoryList() {
+      calculationHistory = [];
+      renderHistory();
+    }
+
+    /* --- TECLADO FÍSICO --- */
+    window.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') appendNum(e.key);
+      if (e.key === '.' || e.key === ',') appendDecimal();
+      if (e.key === '+') appendOperator('+');
+      if (e.key === '-') appendOperator('-');
+      if (e.key === '*') appendOperator('×');
+      if (e.key === '/') { e.preventDefault(); appendOperator('÷'); }
+      if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); calculate(); }
+      if (e.key === 'Backspace') deleteLast();
+      if (e.key === 'Escape') clearAll();
+    });
+  </script>
+</body>
+</html>
