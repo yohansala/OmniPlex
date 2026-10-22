@@ -67,7 +67,7 @@
     body.dark-mode .rate-box { background: #222; border-color: #333; }
     body.dark-mode .history-val { color: #fff; }
 
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
     .toast.show { opacity: 1; }
   </style>
 </head>
@@ -100,7 +100,7 @@
       </div>
       <div class="input-group">
         <span class="currency-label">Bs</span>
-        <input type="number" id="bs-input" class="currency-input" value="883.40" step="any">
+        <input type="number" id="bs-input" class="currency-input" value="884.75" step="any">
         <button class="copy-btn" onclick="copyValue('bs-input')"><i data-lucide="copy" size="20"></i></button>
       </div>
       <button class="share-report-btn" onclick="shareReport()"><i data-lucide="share-2" size="18"></i> Copiar Reporte WhatsApp</button>
@@ -109,136 +109,23 @@
     <div class="rates-card">
       <div class="rates-header"><div class="rates-title">Tasas Oficiales BCV</div><div class="update-time" id="update-time">Actualizado</div></div>
       <div class="rates-grid">
-        <div class="rate-box" onclick="setCurrency('USD')"><div class="rate-name">Dólar ($)</div><div class="rate-value" id="display-usd-rate">Bs. 883.40</div></div>
-        <div class="rate-box" onclick="setCurrency('EUR')"><div class="rate-name">Euro (€)</div><div class="rate-value" id="display-eur-rate">Bs. 993.18</div></div>
-        <div class="rate-box" onclick="setCurrency('CNY')"><div class="rate-name">Yuan (¥)</div><div class="rate-value" id="display-cny-rate">Bs. 132.30</div></div>
-        <div class="rate-box" onclick="setCurrency('RUB')"><div class="rate-name">Rublo (₽)</div><div class="rate-value" id="display-rub-rate">Bs. 10.72</div></div>
+        <div class="rate-box" onclick="setCurrency('USD')"><div class="rate-name">Dólar ($)</div><div class="rate-value" id="display-usd-rate">Bs. --</div></div>
+        <div class="rate-box" onclick="setCurrency('EUR')"><div class="rate-name">Euro (€)</div><div class="rate-value" id="display-eur-rate">Bs. --</div></div>
+        <div class="rate-box" onclick="setCurrency('CNY')"><div class="rate-name">Yuan (¥)</div><div class="rate-value" id="display-cny-rate">Bs. --</div></div>
+        <div class="rate-box" onclick="setCurrency('TRY')"><div class="rate-name">Lira (₺)</div><div class="rate-value" id="display-try-rate">Bs. --</div></div>
+        <div class="rate-box" onclick="setCurrency('RUB')" style="grid-column: span 2;"><div class="rate-name">Rublo (₽)</div><div class="rate-value" id="display-rub-rate">Bs. --</div></div>
       </div>
     </div>
 
     <div class="history-card">
       <div class="rates-title">Cálculos Recientes</div>
-      <div class="history-list" id="history-list"><div class="history-item"><span>1.00 $</span><span class="history-val">883.40 Bs</span></div></div>
+      <div class="history-list" id="history-list"><div class="history-item" style="justify-content:center; color:#9ca3af;">Sin historial</div></div>
     </div>
   </div>
 
   <div id="toast" class="toast">Copiado al portapapeles</div>
 
-  <script>
-    lucide.createIcons();
-    let rates = { USD: 883.3963, EUR: 993.1759, CNY: 132.2964, RUB: 10.7156 };
-    let currentCurrency = 'USD', history = [];
-    const currencyConfig = {
-      USD: { name: "Dólar BCV", symbol: "$" },
-      EUR: { name: "Euro BCV", symbol: "€" },
-      CNY: { name: "Yuan BCV", symbol: "¥" },
-      RUB: { name: "Rublo BCV", symbol: "₽" }
-    };
-
-    const foreignInput = document.getElementById('foreign-input'), bsInput = document.getElementById('bs-input');
-    const foreignSymbol = document.getElementById('foreign-symbol'), bcvButtonText = document.getElementById('bcv-button-text');
-    const updateTime = document.getElementById('update-time'), historyList = document.getElementById('history-list'), toast = document.getElementById('toast');
-
-    function setCurrency(code) {
-      currentCurrency = code;
-      bcvButtonText.innerText = currencyConfig[code].name;
-      foreignSymbol.innerText = currencyConfig[code].symbol;
-      recalculateBs();
-      showToast("Seleccionado: " + currencyConfig[code].name);
-    }
-
-    function cycleCurrency() {
-      const keys = Object.keys(rates);
-      setCurrency(keys[(keys.indexOf(currentCurrency) + 1) % keys.length]);
-    }
-
-    function addAmount(amount) {
-      foreignInput.value = ((parseFloat(foreignInput.value) || 0) + amount).toFixed(2);
-      recalculateBs();
-    }
-
-    function clearInput() { foreignInput.value = ''; bsInput.value = ''; foreignInput.focus(); }
-    function clearHistory() { history = []; historyList.innerHTML = '<div class="history-item" style="justify-content:center; color:#9ca3af;">Sin historial</div>'; showToast("Historial borrado"); }
-
-    function recalculateBs() {
-      const val = parseFloat(foreignInput.value);
-      if (!isNaN(val)) {
-        const totalBs = (val * rates[currentCurrency]).toFixed(2);
-        bsInput.value = totalBs;
-        addHistory(val, totalBs, currencyConfig[currentCurrency].symbol);
-      } else { bsInput.value = ''; }
-    }
-
-    function recalculateForeign() {
-      const val = parseFloat(bsInput.value);
-      if (!isNaN(val)) {
-        const foreignTotal = (val / rates[currentCurrency]).toFixed(2);
-        foreignInput.value = foreignTotal;
-        addHistory(foreignTotal, val.toFixed(2), currencyConfig[currentCurrency].symbol);
-      } else { foreignInput.value = ''; }
-    }
-
-    foreignInput.addEventListener('input', recalculateBs);
-    bsInput.addEventListener('input', recalculateForeign);
-
-    function addHistory(foreign, bs, symbol) {
-      const itemText = `${foreign} ${symbol}`, bsText = `${bs} Bs`;
-      if (history.length > 0 && history[0].foreign === itemText && history[0].bs === bsText) return;
-      history.unshift({ foreign: itemText, bs: bsText });
-      if (history.length > 3) history.pop();
-      historyList.innerHTML = history.map(i => `<div class="history-item"><span>${i.foreign}</span><span class="history-val">${i.bs}</span></div>`).join('');
-    }
-
-    function shareReport() {
-      const fVal = foreignInput.value || '0.00', bVal = bsInput.value || '0.00', sym = currencyConfig[currentCurrency].symbol;
-      navigator.clipboard.writeText(`📝 *CalcBCV - Cotización*\n\n💵 *${fVal} ${sym}* = *${bVal} Bs*\n🏦 *Tasa Oficial:* ${rates[currentCurrency].toFixed(2)} Bs por ${sym}`);
-      showToast("Reporte copiado para WhatsApp");
-    }
-
-    async function fetchAllRates(isManual = false) {
-      const icon = document.getElementById('refresh-icon');
-      if (isManual) { icon.classList.add('refresh-spin'); showToast("Actualizando tasas del BCV..."); }
-      try {
-        const res = await fetch('https://rates.dolarvzla.com/bcv/current.json');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.usd) rates.USD = parseFloat(data.usd);
-          if (data.eur) rates.EUR = parseFloat(data.eur);
-          if (data.cny) rates.CNY = parseFloat(data.cny);
-          if (data.rub) rates.RUB = parseFloat(data.rub);
-          
-          document.getElementById('display-usd-rate').innerText = "Bs. " + rates.USD.toFixed(2);
-          document.getElementById('display-eur-rate').innerText = "Bs. " + rates.EUR.toFixed(2);
-          document.getElementById('display-cny-rate').innerText = "Bs. " + rates.CNY.toFixed(2);
-          document.getElementById('display-rub-rate').innerText = "Bs. " + rates.RUB.toFixed(2);
-          recalculateBs();
-          updateTime.innerText = "Act: " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          if (isManual) showToast("¡Tasas actualizadas!");
-        }
-      } catch (e) { if (isManual) showToast("Error de conexión"); }
-      finally { if (isManual) setTimeout(() => icon.classList.remove('refresh-spin'), 500); }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      fetchAllRates(false);
-      updateTime.innerText = "Act: " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    });
-
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      document.getElementById('theme-icon').setAttribute('data-lucide', document.body.classList.contains('dark-mode') ? 'sun' : 'moon');
-      lucide.createIcons();
-    }
-
-    function copyValue(id) {
-      const input = document.getElementById(id);
-      if (input.value) { navigator.clipboard.writeText(input.value); showToast("Copiado: " + input.value); }
-    }
-
-    function showToast(msg) {
-      toast.innerText = msg; toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
-  </script>
+  <!-- IMPORTACIÓN DEL SCRIPT EN JS -->
+  <script src="conversion.js"></script>
 </body>
 </html>
