@@ -2,7 +2,7 @@
    MENÚ FLOTANTE Y NAVEGACIÓN - OMNIPLEX
    ========================================== */
 
-/* Botón flotante para abrir menú (hamburguesa/icono) */
+/* Botón de menú en la barra superior */
 .menu-toggle-btn {
   width: 42px;
   height: 42px;
@@ -22,24 +22,24 @@
   transform: scale(0.92);
 }
 
-/* Modal / Overlay del Menú */
+/* Fondo oscuro translúcido (Overlay) */
 .menu-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 999;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 16px;
+  align-items: center;
+  padding: 20px;
 }
 
 .menu-overlay.active {
@@ -47,21 +47,21 @@
   pointer-events: auto;
 }
 
-/* Tarjeta contenedora del Menú */
+/* Tarjeta contenedora central del Menú */
 .menu-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 360px;
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  transform: translateY(-20px) scale(0.95);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  transform: scale(0.9);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #e5e7eb;
 }
 
 .menu-overlay.active .menu-container {
-  transform: translateY(0) scale(1);
+  transform: scale(1);
 }
 
 /* Encabezado del Menú */
@@ -73,31 +73,36 @@
 }
 
 .menu-header h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   color: #111827;
+  margin: 0;
 }
 
 .menu-close-btn {
   background: #f3f4f6;
   border: none;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #6b7280;
+  color: #4b5563;
 }
 
-/* BARRA DE BÚSQUEDA DEL MENÚ */
+.menu-close-btn:active {
+  transform: scale(0.9);
+}
+
+/* Barra de búsqueda dentro del menú */
 .menu-search-box {
   position: relative;
   margin-bottom: 16px;
 }
 
-.menu-search-box i {
+.menu-search-box svg {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -107,60 +112,59 @@
 
 .menu-search-input {
   width: 100%;
-  padding: 12px 12px 12px 40px;
-  border-radius: 14px;
+  padding: 10px 12px 10px 38px;
+  border-radius: 12px;
   border: 1px solid #e5e7eb;
   background: #f9fafb;
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .menu-search-input:focus {
   border-color: #0066ff;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.12);
 }
 
-/* LISTA DE NAVEGACIÓN Y ENLACES */
+/* Lista de enlaces del menú */
 .menu-links {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px;
   border-radius: 12px;
   text-decoration: none;
-  color: #374151;
+  color: #1f2937;
   font-weight: 600;
   font-size: 14px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.menu-item:hover, .menu-item:active {
-  background: #f0f6ff;
+.menu-item:active {
+  background: #f3f4f6;
   color: #0066ff;
 }
 
-.menu-item i {
+.menu-item svg {
   color: #0066ff;
 }
 
 /* MODO OSCURO PARA EL MENÚ */
 body.dark-mode .menu-toggle-btn {
-  background: #1e1e1e;
-  border-color: #333;
-  color: #fff;
+  background: #1e293b;
+  border-color: #334155;
+  color: #facc15;
 }
 
 body.dark-mode .menu-container {
-  background: #18181b;
-  border-color: #27272a;
+  background: #1e293b;
+  border-color: #334155;
 }
 
 body.dark-mode .menu-header h3 {
@@ -168,23 +172,21 @@ body.dark-mode .menu-header h3 {
 }
 
 body.dark-mode .menu-close-btn {
-  background: #27272a;
-  color: #a1a1aa;
+  background: #0f172a;
+  color: #94a3b8;
 }
 
 body.dark-mode .menu-search-input {
-  background: #27272a;
-  border-color: #3f3f46;
+  background: #0f172a;
+  border-color: #334155;
   color: #fff;
 }
 
 body.dark-mode .menu-item {
-  color: #e4e4e7;
+  color: #f1f5f9;
 }
 
-body.dark-mode .menu-item:hover, body.dark-mode .menu-item:active {
-  background: #27272a;
+body.dark-mode .menu-item:active {
+  background: #0f172a;
   color: #60a5fa;
 }
-
-
