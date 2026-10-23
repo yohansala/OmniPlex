@@ -1,98 +1,82 @@
-/* ==========================================
-   LÓGICA DEL MENÚ Y BÚSQUEDA EN TIEMPO REAL
-   ========================================== */
+// Función para abrir el menú flotante
+function openMenu() {
+  let overlay = document.getElementById('omni-menu-overlay');
+  if (!overlay) {
+    createMenuDOM();
+    overlay = document.getElementById('omni-menu-overlay');
+  }
+  overlay.classList.add('active');
+}
 
-function initMenu() {
-  // Verificar si ya existe para no duplicarlo
-  if (document.getElementById("menuOverlay")) return;
+// Función para cerrar el menú flotante
+function closeMenu() {
+  const overlay = document.getElementById('omni-menu-overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+  }
+}
 
+// Navegación suave a secciones y cierre automático del menú
+function navigateToSection(id) {
+  closeMenu();
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, 150);
+}
+
+// Estructura HTML del Menú vinculada con menu.css
+function createMenuDOM() {
   const menuHTML = `
-    <div class="menu-overlay" id="menuOverlay">
-      <div class="menu-container">
+    <div class="menu-overlay" id="omni-menu-overlay" onclick="closeMenu()">
+      <div class="menu-container" onclick="event.stopPropagation()">
+        
         <div class="menu-header">
           <h3>Navegación & Menú</h3>
-          <button class="menu-close-btn" id="closeMenuBtn">
+          <button class="menu-close-btn" onclick="closeMenu()">
             <i data-lucide="x" size="18"></i>
           </button>
         </div>
 
-        <!-- Búsqueda rápida de proyectos -->
         <div class="menu-search-box">
           <i data-lucide="search" size="18"></i>
-          <input type="text" id="menuSearchInput" class="menu-search-input" placeholder="Buscar herramienta o juego...">
+          <input type="text" class="menu-search-input" placeholder="Buscar herramienta o juego..." onkeyup="filterFromMenu(this.value)">
         </div>
 
-        <!-- Enlaces directos -->
         <div class="menu-links">
-          <a href="#" class="menu-item" onclick="closeMenu()">
+          <a href="#" class="menu-item" onclick="closeMenu(); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">
             <i data-lucide="home" size="18"></i> Inicio / Hub
           </a>
-          <a href="#section-finanzas" class="menu-item" onclick="closeMenu()">
+          <a href="#" class="menu-item" onclick="navigateToSection('section-finanzas'); return false;">
             <i data-lucide="landmark" size="18"></i> Finanzas & Utilidades
           </a>
-          <a href="#section-juegos" class="menu-item" onclick="closeMenu()">
+          <a href="#" class="menu-item" onclick="navigateToSection('section-juegos'); return false;">
             <i data-lucide="gamepad-2" size="18"></i> Juegos & Entretenimiento
           </a>
-          <a href="#section-comentarios" class="menu-item" onclick="closeMenu()">
+          <a href="#" class="menu-item" onclick="navigateToSection('section-comentarios'); return false;">
             <i data-lucide="message-square" size="18"></i> Dejar un Comentario
           </a>
         </div>
+
       </div>
     </div>
   `;
 
-  document.body.insertAdjacentHTML("beforeend", menuHTML);
-
-  if (typeof lucide !== "undefined") {
+  document.body.insertAdjacentHTML('beforeend', menuHTML);
+  if (window.lucide) {
     lucide.createIcons();
   }
+}
 
-  const menuOverlay = document.getElementById("menuOverlay");
-  const closeMenuBtn = document.getElementById("closeMenuBtn");
-  const searchInput = document.getElementById("menuSearchInput");
-
-  if (closeMenuBtn) closeMenuBtn.addEventListener("click", closeMenu);
-
-  if (menuOverlay) {
-    menuOverlay.addEventListener("click", (e) => {
-      if (e.target === menuOverlay) closeMenu();
-    });
+// Filtro integrado con el buscador principal del Hub
+function filterFromMenu(query) {
+  const mainInput = document.getElementById('searchInput');
+  if (mainInput) {
+    mainInput.value = query;
+    if (typeof filterProjects === 'function') {
+      filterProjects();
+    }
   }
-
-  // BÚSQUEDA EN TIEMPO REAL
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      const query = e.target.value.toLowerCase().trim();
-      const cards = document.querySelectorAll(".project-card");
-
-      cards.forEach((card) => {
-        const title = card.querySelector("h3") ? card.querySelector("h3").textContent.toLowerCase() : "";
-        const desc = card.querySelector("p") ? card.querySelector("p").textContent.toLowerCase() : "";
-
-        if (title.includes(query) || desc.includes(query)) {
-          card.style.display = "flex";
-        } else {
-          card.style.display = "none";
-        }
-      });
-    });
-  }
-}
-
-// Inicializar cuando el DOM esté listo
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initMenu);
-} else {
-  initMenu();
-}
-
-// Funciones globales para abrir y cerrar
-function openMenu() {
-  const overlay = document.getElementById("menuOverlay");
-  if (overlay) overlay.classList.add("active");
-}
-
-function closeMenu() {
-  const overlay = document.getElementById("menuOverlay");
-  if (overlay) overlay.classList.remove("active");
 }
