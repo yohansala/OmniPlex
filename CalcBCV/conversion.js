@@ -8,11 +8,11 @@ if (window.lucide) {
 // (Copiadas directo del reporte de WhatsApp)
 // ==========================================
 let rates = { 
-  USD: 886.2271, 
-  EUR: 993.08836371, 
-  CNY: 132.78202957, 
-  TRY: 17.85783286, 
-  RUB: 10.85596986 
+  USD: 887.30200000, 
+  EUR: 994.03555758, 
+  CNY: 133.03476918, 
+  TRY: 17.84008220, 
+  RUB: 11.00248494 
 };
 
 let currentCurrency = 'USD';
