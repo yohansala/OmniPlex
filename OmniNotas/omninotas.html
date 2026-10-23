@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniNotas - Bloc Rápido</title>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+    .app-container { width: 100%; max-width: 420px; padding: 16px; display: flex; flex-direction: column; }
+    
+    /* HEADER */
+    .header-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; }
+    .back-btn, .action-btn-top { width: 42px; height: 42px; background: #fff; border: 1px solid #e5e7eb; color: #4b5563; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s; }
+    .back-btn:active, .action-btn-top:active { transform: scale(0.92); }
+    
+    .brand-title { font-size: 18px; font-weight: 800; color: #111827; }
+
+    /* ÁREA DE NOTAS */
+    .notes-card { background: #fff; border-radius: 16px; padding: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .notes-card h2 { font-size: 15px; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 6px; }
+    
+    .note-textarea { width: 100%; height: 260px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; font-size: 14px; outline: none; background: #f9fafb; color: #1f2937; resize: none; transition: border 0.2s; }
+    .note-textarea:focus { border-color: #0066ff; background: #fff; }
+
+    .btn-group { display: flex; gap: 10px; }
+    .btn-action { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, background 0.2s; }
+    .btn-action:active { transform: scale(0.98); }
+    
+    .btn-save { background: #0066ff; color: white; }
+    .btn-save:hover { background: #0052cc; }
+    
+    .btn-clear { background: #fee2e2; color: #991b1b; }
+    .btn-clear:hover { background: #fecaca; }
+
+    /* MENSAJE DE ESTADO (TOAST) */
+    .status-msg { text-align: center; font-size: 12px; color: #16a34a; font-weight: 600; min-height: 18px; opacity: 0; transition: opacity 0.3s; }
+    .status-msg.show { opacity: 1; }
+
+    /* MODO OSCURO */
+    body.dark-mode { background: #0b0f19; color: #fff; }
+    body.dark-mode .brand-title, body.dark-mode .notes-card h2 { color: #fff; }
+    body.dark-mode .back-btn, body.dark-mode .action-btn-top { background: #1e293b; border-color: #334155; color: #facc15; }
+    body.dark-mode .notes-card { background: #1e293b; border-color: #334155; }
+    body.dark-mode .note-textarea { background: #0f172a; border-color: #334155; color: #fff; }
+    body.dark-mode .btn-clear { background: #451a03; color: #fca5a5; }
+
+    .footer { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Barra Superior con Botón de Regresar Corregido -->
+    <div class="header-bar">
+      <!-- AQUÍ ESTÁ EL CAMBIO: Usa historia nativa o redirige a otromenu.html de forma limpia -->
+      <a href="../otromenu.html" class="back-btn" onclick="if(history.length > 1){ history.back(); return false; }">
+        <i data-lucide="arrow-left" size="20"></i>
+      </a>
+
+      <h1 class="brand-title">OmniNotas 📝</h1>
+
+      <button class="action-btn-top" onclick="toggleTheme()">
+        <i data-lucide="moon" id="theme-icon"></i>
+      </button>
+    </div>
+
+    <!-- Contenedor del Bloc -->
+    <div class="notes-card">
+      <h2>Bloc de Notas Privado</h2>
+      <textarea id="userNote" class="note-textarea" placeholder="Escribe tus notas, ideas o pendientes aquí... (Se guardan automáticamente en tu dispositivo)"></textarea>
+      
+      <div id="saveStatus" class="status-msg">¡Nota guardada localmente! ✓</div>
+
+      <div class="btn-group">
+        <button class="btn-action btn-clear" onclick="clearNote()">
+          <i data-lucide="trash-2" size="16"></i> Borrar
+        </button>
+        <button class="btn-action btn-save" onclick="saveNoteManual()">
+          <i data-lucide="save" size="16"></i> Guardar
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">© 2026 OmniPlex Studio</div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const noteInput = document.getElementById('userNote');
+    const saveStatus = document.getElementById('saveStatus');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedNote = localStorage.getItem('omni_user_note');
+      if (savedNote) {
+        noteInput.value = savedNote;
+      }
+    });
+
+    noteInput.addEventListener('input', () => {
+      localStorage.setItem('omni_user_note', noteInput.value);
+    });
+
+    function saveNoteManual() {
+      localStorage.setItem('omni_user_note', noteInput.value);
+      saveStatus.classList.add('show');
+      setTimeout(() => {
+        saveStatus.classList.remove('show');
+      }, 2000);
+    }
+
+    function clearNote() {
+      if (confirm("¿Estás seguro de vaciar el bloc de notas?")) {
+        noteInput.value = '';
+        localStorage.removeItem('omni_user_note');
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const themeIcon = document.getElementById('theme-icon');
+      if (document.body.classList.contains('dark-mode')) {
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
