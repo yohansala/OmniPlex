@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Información y Legal - OmniPlex</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 16px; overflow-y: auto; }
+    .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+
+    /* HEADER */
+    .header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .back-btn { display: flex; align-items: center; gap: 6px; text-decoration: none; color: #0066ff; font-weight: 700; font-size: 14px; }
+    .title { font-size: 18px; font-weight: 800; color: #111827; }
+
+    /* SECCIONES / TARJETAS */
+    .info-card { width: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .info-card h2 { font-size: 15px; font-weight: 800; color: #111827; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .info-card p { font-size: 13px; color: #4b5563; line-height: 1.5; margin-bottom: 6px; }
+    .info-card p:last-child { margin-bottom: 0; }
+
+    /* FOOTER / COPYRIGHT */
+    .footer-note { font-size: 12px; color: #9ca3af; text-align: center; margin-top: 10px; font-weight: 600; }
+
+    /* MODO OSCURO */
+    body.dark-mode { background: #000; color: #fff; }
+    body.dark-mode .title, body.dark-mode .info-card h2 { color: #fff; }
+    body.dark-mode .info-card { background: #1a1a1a; border-color: #333; }
+    body.dark-mode .info-card p { color: #d1d5db; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <a href="index.html" class="back-btn"><i data-lucide="arrow-left" size="18"></i> Volver al Hub</a>
+      <h1 class="title">OmniPlex Info</h1>
+    </div>
+
+    <!-- Sobre Nosotros -->
+    <div class="info-card">
+      <h2><i data-lucide="info" size="18" style="color: #0066ff;"></i> Sobre OmniPlex</h2>
+      <p>OmniPlex es un ecosistema de aplicaciones web ultraligeras y funcionales, diseñado para ofrecerte herramientas financieras, utilidades del día a día y entretenimiento en un solo lugar.</p>
+    </div>
+
+    <!-- Derechos de Autor -->
+    <div class="info-card">
+      <h2><i data-lucide="shield-check" size="18" style="color: #10b981;"></i> Derechos de Autor</h2>
+      <p>© 2026 OmniPlex. Todos los derechos reservados sobre el diseño, código y desarrollo original del ecosistema.</p>
+      <p>Las herramientas y minijuegos están optimizados para ofrecer la mejor experiencia web móvil y de escritorio.</p>
+    </div>
+
+    <!-- Privacidad y Almacenamiento -->
+    <div class="info-card">
+      <h2><i data-lucide="lock" size="18" style="color: #f59e0b;"></i> Privacidad de Datos</h2>
+      <p>Tu privacidad es total. Las notas, configuraciones o puntuaciones que generes dentro de las apps de OmniPlex se guardan de forma local en tu dispositivo usando el almacenamiento interno (`localStorage`). No recopilamos datos personales en servidores externos.</p>
+    </div>
+
+    <div class="footer-note">
+      Diseñado con pasión para el gran lanzamiento 🚀
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
