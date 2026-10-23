@@ -1,3 +1,7 @@
+/* ==========================================
+   SISTEMA DE MENÚ FLOTANTE Y NAVEGACIÓN - OMNIPLEX
+   ========================================== */
+
 // Función para abrir el menú flotante
 function openMenu() {
   let overlay = document.getElementById('omni-menu-overlay');
@@ -5,7 +9,15 @@ function openMenu() {
     createMenuDOM();
     overlay = document.getElementById('omni-menu-overlay');
   }
+  
   overlay.classList.add('active');
+  document.body.style.overflow = 'hidden'; // Evita el scroll de fondo en móviles al abrir el menú
+
+  // Enfocar automáticamente el input de búsqueda si existe
+  setTimeout(() => {
+    const searchInput = overlay.querySelector('.menu-search-input');
+    if (searchInput) searchInput.focus();
+  }, 200);
 }
 
 // Función para cerrar el menú flotante
@@ -13,6 +25,7 @@ function closeMenu() {
   const overlay = document.getElementById('omni-menu-overlay');
   if (overlay) {
     overlay.classList.remove('active');
+    document.body.style.overflow = ''; // Restablece el scroll de la página
   }
 }
 
@@ -35,7 +48,7 @@ function createMenuDOM() {
         
         <div class="menu-header">
           <h3>Navegación & Menú</h3>
-          <button class="menu-close-btn" onclick="closeMenu()">
+          <button class="menu-close-btn" onclick="closeMenu()" aria-label="Cerrar menú">
             <i data-lucide="x" size="18"></i>
           </button>
         </div>
@@ -65,6 +78,8 @@ function createMenuDOM() {
   `;
 
   document.body.insertAdjacentHTML('beforeend', menuHTML);
+  
+  // Renderizar iconos de Lucide si la librería está cargada
   if (window.lucide) {
     lucide.createIcons();
   }
@@ -80,3 +95,10 @@ function filterFromMenu(query) {
     }
   }
 }
+
+// Cerrar menú con la tecla 'Escape' (Mejora de accesibilidad para computadoras)
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeMenu();
+  }
+});
