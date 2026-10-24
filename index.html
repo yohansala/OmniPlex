@@ -6,7 +6,6 @@
   <title>OmniPlex</title>
   
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Enlazamos los estilos del menú flotante -->
   <link rel="stylesheet" href="./menu.css">
   
   <style>
@@ -14,7 +13,6 @@
     body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; min-height: 100vh; transition: background 0.3s, color 0.3s; }
     .app-container { width: 100%; max-width: 420px; padding: 16px; display: flex; flex-direction: column; }
     
-    /* HEADER */
     .header-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; }
     .header-actions { display: flex; gap: 8px; align-items: center; }
     .menu-toggle-btn, .action-btn-top { width: 42px; height: 42px; background: #fff; border: 1px solid #e5e7eb; color: #4b5563; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-decoration: none; }
@@ -24,13 +22,18 @@
     .brand-logo-img { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; }
     .brand-title { font-size: 20px; font-weight: 800; color: #111827; }
 
-    /* TARJETA DE BIENVENIDA */
     .welcome-card { background: linear-gradient(135deg, #0066ff, #0040dd); color: #fff; border-radius: 20px; padding: 20px; margin-bottom: 16px; position: relative; box-shadow: 0 8px 20px rgba(0, 102, 255, 0.25); }
     .welcome-card h2 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
-    .welcome-card p { font-size: 13px; opacity: 0.9; }
+    .welcome-card p { font-size: 13px; opacity: 0.9; margin-bottom: 10px; }
     .version-badge { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; backdrop-filter: blur(4px); }
 
-    /* BARRA DE BÚSQUEDA RÁPIDA */
+    /* Estilo del Reel / Carrusel Automático */
+    .word-reel-box { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; padding: 10px 12px; backdrop-filter: blur(6px); margin-top: 8px; min-height: 52px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+    .reel-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; opacity: 0.85; display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+    .reel-content { font-size: 13px; font-weight: 600; transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out; }
+    .fade-out { opacity: 0; transform: translateY(-6px); }
+    .fade-in { opacity: 1; transform: translateY(0); }
+
     .search-box { position: relative; margin-bottom: 16px; }
     .search-input { width: 100%; padding: 12px 16px 12px 40px; border-radius: 14px; border: 1px solid #e5e7eb; background: #fff; font-size: 13px; outline: none; transition: all 0.2s; }
     .search-input:focus { border-color: #0066ff; box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1); }
@@ -38,7 +41,6 @@
 
     .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: #888; font-weight: 700; margin-bottom: 10px; margin-top: 4px; }
     
-    /* TARJETAS DE PROYECTOS */
     .projects-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
     .project-card { background: #fff; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; text-decoration: none; color: inherit; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
     .project-card:active { transform: scale(0.98); background: #f9fafb; }
@@ -49,14 +51,18 @@
     
     .project-details h3 { font-size: 15px; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 6px; }
     .project-details p { font-size: 12px; color: #6b7280; margin-top: 2px; }
-    .project-action { color: #9ca3af; transition: transform 0.2s; }
+    
+    .project-actions { display: flex; align-items: center; gap: 8px; }
+    .fav-btn { background: none; border: none; cursor: pointer; color: #d1d5db; transition: color 0.2s, transform 0.2s; padding: 4px; display: flex; align-items: center; justify-content: center; }
+    .fav-btn:active { transform: scale(1.2); }
+    .fav-btn.active { color: #facc15; }
 
     .tag-badge { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; }
     .tag-popular { background: #dbeafe; color: #1e40af; }
     .tag-new { background: #dcfce7; color: #166534; }
     .tag-game { background: #fef3c7; color: #92400e; }
+    .tag-soon { background: #f3e8ff; color: #7e22ce; }
 
-    /* FORMULARIO DE COMENTARIOS */
     .feedback-card { background: #fff; border-radius: 16px; padding: 16px; border: 1px solid #e2e8f0; margin-bottom: 16px; }
     .feedback-card h4 { font-size: 14px; font-weight: 800; color: #111827; margin-bottom: 8px; }
     .star-rating { display: flex; gap: 6px; margin-bottom: 10px; }
@@ -66,7 +72,6 @@
     .feedback-textarea { resize: none; height: 70px; }
     .feedback-btn { width: 100%; background: #0066ff; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
 
-    /* MODO OSCURO */
     body.dark-mode { background: #0b0f19; color: #fff; }
     body.dark-mode .brand-title, body.dark-mode .project-details h3, body.dark-mode .feedback-card h4 { color: #fff; }
     body.dark-mode .menu-toggle-btn, body.dark-mode .action-btn-top { background: #1e293b; border-color: #334155; color: #facc15; }
@@ -77,10 +82,11 @@
     .footer { text-align: center; font-size: 12px; color: #9ca3af; margin-top: 10px; margin-bottom: 20px; }
   </style>
 </head>
+
 <body>
   <div class="app-container">
     
-    <!-- Barra Superior -->
+    <!-- HEADER -->
     <div class="header-bar">
       <button class="menu-toggle-btn" onclick="openMenu()">
         <i data-lucide="menu" size="20"></i>
@@ -101,23 +107,31 @@
       </div>
     </div>
 
-    <!-- Bienvenida -->
+    <!-- TARJETA BIENVENIDA CON REEL DE PALABRAS -->
     <div class="welcome-card">
-      <span class="version-badge">v1.2</span>
+      <span class="version-badge">v1.7</span>
       <h2>Centro de Proyectos</h2>
       <p>Explora mis herramientas y minijuegos web.</p>
+      
+      <div class="word-reel-box">
+        <div class="reel-title"><i data-lucide="sparkles" size="14"></i> OmniReel • Inspiración del Día</div>
+        <div class="reel-content fade-in" id="reelText">Cargando inspiración...</div>
+      </div>
     </div>
 
-    <!-- Buscador Rápido -->
+    <!-- BUSCADOR -->
     <div class="search-box">
       <i data-lucide="search" class="search-icon" size="18"></i>
       <input type="text" id="searchInput" class="search-input" placeholder="Buscar herramientas o juegos..." onkeyup="filterProjects()">
     </div>
+    <!-- FAVORITOS -->
+    <div id="section-favoritos-title" class="section-title" style="display: none;">⭐ Tus Favoritos</div>
+    <div id="favorites-grid" class="projects-grid"></div>
 
-    <!-- Finanzas & Utilidades -->
+    <!-- FINANZAS & UTILIDADES -->
     <div class="section-title" id="section-finanzas">Finanzas & Utilidades</div>
     <div class="projects-grid">
-      <a href="./CalcBCV/index.html" class="project-card">
+      <a href="./CalcBCV/index.html" class="project-card" data-id="calc-bcv">
         <div class="project-info">
           <div class="project-icon"><img src="./CalcBCV.jpg" alt="CalcBCV" class="project-icon-img"></div>
           <div class="project-details">
@@ -125,10 +139,13 @@
             <p>Tasas oficiales BCV</p>
           </div>
         </div>
-        <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'calc-bcv')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
       </a>
 
-      <a href="./CalcuBasi/index.html" class="project-card">
+      <a href="./CalcuBasi/index.html" class="project-card" data-id="calcu-basi">
         <div class="project-info">
           <div class="project-icon"><img src="./CalcuBasi.jpg" alt="CalcuBasi" class="project-icon-img"></div>
           <div class="project-details">
@@ -136,10 +153,13 @@
             <p>Calculadora neumórfica</p>
           </div>
         </div>
-        <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'calcu-basi')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
       </a>
 
-      <a href="./OmniNotas/omninotas.html" class="project-card">
+      <a href="./OmniNotas/omninotas.html" class="project-card" data-id="omni-notas">
         <div class="project-info">
           <div class="project-icon" style="background: rgba(0,102,255,0.1); color: #0066ff;">
             <i data-lucide="file-text" size="22"></i>
@@ -149,27 +169,97 @@
             <p>Bloc de notas rápido y privado</p>
           </div>
         </div>
-        <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-notas')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
+      </a>
+
+      <a href="./OmniPass/omnipass.html" class="project-card" data-id="omni-pass">
+        <div class="project-info">
+          <div class="project-icon" style="background: rgba(0,102,255,0.1); color: #0066ff;">
+            <i data-lucide="key" size="22"></i>
+          </div>
+          <div class="project-details">
+            <h3>OmniPass <span class="tag-badge tag-new">Nuevo</span></h3>
+            <p>Generador de contraseñas seguras</p>
+          </div>
+        </div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-pass')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
+      </a>
+
+      <a href="./OmniQr/omniqr.html" class="project-card" data-id="omni-qr">
+        <div class="project-info">
+          <div class="project-icon" style="background: rgba(0,102,255,0.1); color: #0066ff;">
+            <i data-lucide="qr-code" size="22"></i>
+          </div>
+          <div class="project-details">
+            <h3>OmniQR <span class="tag-badge tag-new">Nuevo</span></h3>
+            <p>Generador de códigos QR instantáneos</p>
+          </div>
+        </div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-qr')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
       </a>
     </div>
 
-    <!-- Juegos & Entretenimiento -->
+    <!-- JUEGOS & ENTRETENIMIENTO -->
     <div class="section-title" id="section-juegos">Juegos & Entretenimiento</div>
     <div class="projects-grid">
-      <a href="./Mini Juegos y más/OmniTresEnRaya/omnitresenrayas.html" class="project-card">
+      <a href="./minijuegos/OmniSnake/omnisnake.html" class="project-card" data-id="omni-snake">
+        <div class="project-info">
+          <div class="project-icon" style="background: rgba(0,102,255,0.1); color: #0066ff;">
+            <i data-lucide="activity" size="22"></i>
+          </div>
+          <div class="project-details">
+            <h3>OmniSnake <span class="tag-badge tag-game">Juego</span></h3>
+            <p>Clásico juego de la serpiente táctil</p>
+          </div>
+        </div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-snake')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
+      </a>
+
+      <a href="./minijuegos/OmniMemory/omnimemory.html" class="project-card" data-id="omni-memory">
+        <div class="project-info">
+          <div class="project-icon" style="background: rgba(0,102,255,0.1); color: #0066ff;">
+            <i data-lucide="layers" size="22"></i>
+          </div>
+          <div class="project-details">
+            <h3>OmniMemory <span class="tag-badge tag-game">Juego</span></h3>
+            <p>Juego de memoria y parejas de cartas</p>
+          </div>
+        </div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-memory')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
+      </a>
+
+      <a href="./minijuegos/OmniTresEnRaya/omnitresenrayas.html" class="project-card" data-id="omni-tresenraya">
         <div class="project-info">
           <div class="project-icon" style="background: rgba(0,102,255,0.1); color: #0066ff;">
             <i data-lucide="grid" size="22"></i>
           </div>
           <div class="project-details">
-            <h3>OmniTresEnRaya <span class="tag-badge tag-game">Nuevo Juego</span></h3>
+            <h3>OmniTresEnRaya <span class="tag-badge tag-game">Juego</span></h3>
             <p>Tres en raya clásico vs IA o 2 Jugadores</p>
           </div>
         </div>
-        <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-tresenraya')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
       </a>
 
-      <a href="./Mini Juegos y más/OmniClicker/index.html" class="project-card">
+      <a href="./minijuegos/OmniClicker/index.html" class="project-card" data-id="omni-clicker">
         <div class="project-info">
           <div class="project-icon"><img src="./OmniClicker.jpg" alt="OmniClicker" class="project-icon-img"></div>
           <div class="project-details">
@@ -177,11 +267,50 @@
             <p>Minijuego de clics rápidos con tienda</p>
           </div>
         </div>
-        <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-clicker')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
+      </a>
+
+      <a href="./minijuegos/OmniPiedraPapel/omnipiedrapapel.html" class="project-card" data-id="omni-piedrapapel">
+        <div class="project-info">
+          <div class="project-icon" style="background: rgba(0,102,255,0.1); color: #0066ff;">
+            <i data-lucide="hand" size="22"></i>
+          </div>
+          <div class="project-details">
+            <h3>OmniPiedraPapel <span class="tag-badge tag-game">Juego</span></h3>
+            <p>Clásico piedra, papel o tijera vs IA</p>
+          </div>
+        </div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-piedrapapel')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="chevron-right" size="18"></i></div>
+        </div>
       </a>
     </div>
 
-    <!-- Formulario de Comentarios -->
+    <!-- EDUCACIÓN & APRENDIZAJE -->
+    <div class="section-title" id="section-educacion">Educación & Aprendizaje</div>
+    <div class="projects-grid">
+      <div class="project-card" data-id="omni-edu" onclick="alert('¡Próximamente disponible! Módulo educativo en desarrollo 📚🚀')" style="cursor: pointer;">
+        <div class="project-info">
+          <div class="project-icon" style="background: rgba(126,34,206,0.08); color: #7e22ce;">
+            <i data-lucide="graduation-cap" size="22"></i>
+          </div>
+          <div class="project-details">
+            <h3>OmniEduca <span class="tag-badge tag-soon">Próximamente</span></h3>
+            <p>Cursos, quiz y retos de programación</p>
+          </div>
+        </div>
+        <div class="project-actions">
+          <button type="button" class="fav-btn" onclick="toggleFavorite(event, 'omni-edu')" aria-label="Favorito">★</button>
+          <div class="project-action"><i data-lucide="clock" size="18" style="color: #9ca3af;"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMENTARIOS -->
     <div class="section-title" id="section-comentarios">Déjanos tu Comentario ⭐</div>
     <div class="feedback-card">
       <h4>¡Escribe tu opinión fácilmente!</h4>
@@ -207,6 +336,45 @@
   <script>
     lucide.createIcons();
 
+    let favorites = JSON.parse(localStorage.getItem('omni_favorites')) || [];
+
+    // Reel Ampliado de Inspiración (Tecnología, Música, Admiración, Código y Motivación)
+    const reelItems = [
+      "🚀 Tecnología: Código limpio, diseño fluido y velocidad móvil.",
+      "🎵 Música: El ritmo perfecto para inspirar cada línea de código.",
+      "💡 Admiración: La creatividad transforma ideas simples en grandes proyectos.",
+      "⚡ Innovación: Cada pequeño detalle marca la diferencia en OmniPlex.",
+      "🔥 Pasión: Dándole duro al desarrollo y superando límites todos los días.",
+      "🧠 Algoritmo: Lógica exacta para resolver cualquier reto digital.",
+      "🎧 Soundtrck: La buena música despierta la genialidad del programador.",
+      "📱 Mobile First: Pensado y construido para una experiencia táctil perfecta.",
+      "🌐 Conectividad: La tecnología une ideas y crea nuevas posibilidades.",
+      "🎯 Enfoque: Constancia, disciplina y código bien estructurado.",
+      "🎨 Diseño: La estética y la funcionalidad van siempre de la mano.",
+      "💻 Developer: Convertir café y código en aplicaciones funcionales.",
+      "🚀 Visión: Construyendo hoy la tecnología que usaremos mañana."
+    ];
+
+    let currentReelIndex = 0;
+
+    function updateReel() {
+      const reelEl = document.getElementById('reelText');
+      if (!reelEl) return;
+
+      // Efecto desvanecimiento de salida
+      reelEl.classList.remove('fade-in');
+      reelEl.classList.add('fade-out');
+
+      setTimeout(() => {
+        currentReelIndex = (currentReelIndex + 1) % reelItems.length;
+        reelEl.textContent = reelItems[currentReelIndex];
+
+        // Efecto desvanecimiento de entrada
+        reelEl.classList.remove('fade-out');
+        reelEl.classList.add('fade-in');
+      }, 400);
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       const hora = new Date().getHours();
       const welcomeP = document.querySelector('.welcome-card p');
@@ -217,7 +385,65 @@
       } else {
         welcomeP.textContent = "¡Buenas noches! Dándole duro al código y los juegos.";
       }
+
+      // Iniciar el reel con el primer elemento
+      const reelEl = document.getElementById('reelText');
+      if (reelEl) {
+        reelEl.textContent = reelItems[0];
+      }
+
+      // Cambiar de frase automáticamente cada 5 segundos
+      setInterval(updateReel, 5000);
+
+      renderFavorites();
     });
+
+    function toggleFavorite(event, id) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (favorites.includes(id)) {
+        favorites = favorites.filter(favId => favId !== id);
+      } else {
+        favorites.push(id);
+      }
+      localStorage.setItem('omni_favorites', JSON.stringify(favorites));
+      renderFavorites();
+    }
+
+    function renderFavorites() {
+      const favGrid = document.getElementById('favorites-grid');
+      const favTitle = document.getElementById('section-favoritos-title');
+      if (!favGrid || !favTitle) return;
+
+      favGrid.innerHTML = '';
+
+      document.querySelectorAll('.project-card').forEach(card => {
+        const id = card.getAttribute('data-id');
+        const btn = card.querySelector('.fav-btn');
+        if (btn) {
+          if (favorites.includes(id)) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+
+      if (favorites.length === 0) {
+        favTitle.style.display = 'none';
+        favGrid.style.display = 'none';
+        return;
+      }
+
+      favTitle.style.display = 'block';
+      favGrid.style.display = 'flex';
+
+      favorites.forEach(id => {
+        const originalCard = document.querySelector(`.project-card[data-id="${id}"]`);
+        if (originalCard) {
+          const clone = originalCard.cloneNode(true);
+          favGrid.appendChild(clone);
+        }
+      });
+      if (window.lucide) lucide.createIcons();
+    }
 
     function rate(stars) {
       document.getElementById('ratingInput').value = stars + " Estrellas";
@@ -231,12 +457,10 @@
     function toggleTheme() {
       document.body.classList.toggle('dark-mode');
       const themeIcon = document.getElementById('theme-icon');
-      if (document.body.classList.contains('dark-mode')) {
-        themeIcon.setAttribute('data-lucide', 'sun');
-      } else {
-        themeIcon.setAttribute('data-lucide', 'moon');
+      if (themeIcon) {
+        themeIcon.setAttribute('data-lucide', document.body.classList.contains('dark-mode') ? 'sun' : 'moon');
+        if (window.lucide) lucide.createIcons();
       }
-      lucide.createIcons();
     }
 
     function filterProjects() {
@@ -254,7 +478,7 @@
     }
   </script>
 
-  <!-- Enlazamos el JS del menú -->
+
   <script src="./menu.js"></script>
 </body>
 </html>
