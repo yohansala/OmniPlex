@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OmniSnake - OmniPlex</title>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
+    body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; min-height: 100vh; overflow: hidden; transition: background 0.3s, color 0.3s; }
+    .app-container { width: 100%; max-width: 420px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100vh; }
+    
+    /* HEADER */
+    .header-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px; }
+    .back-btn, .action-btn-top { width: 38px; height: 38px; background: #fff; border: 1px solid #e5e7eb; color: #4b5563; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-decoration: none; }
+    .back-btn:active, .action-btn-top:active { transform: scale(0.92); }
+    .brand-title { font-size: 16px; font-weight: 800; color: #111827; }
+
+    /* ESTADÍSTICAS */
+    .stats-board { width: 100%; display: flex; justify-content: space-between; background: #fff; padding: 8px 14px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); font-weight: 700; font-size: 12px; }
+    .stats-item { display: flex; flex-direction: column; align-items: center; }
+    .stats-item span { color: #0066ff; font-size: 14px; }
+
+    /* LIENZO DEL JUEGO */
+    .game-canvas-container { width: 100%; max-width: 340px; aspect-ratio: 1 / 1; background: #ffffff; border-radius: 20px; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); overflow: hidden; position: relative; }
+    canvas { width: 100%; height: 100%; display: block; background: #0f172a; border-radius: 18px; }
+
+    /* MENSAJE DE INICIO EN EL CANVAS */
+    .canvas-overlay { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center; pointer-events: none; transition: opacity 0.3s; }
+    .canvas-overlay h2 { font-size: 18px; font-weight: 800; margin-bottom: 4px; color: #60a5fa; }
+    .canvas-overlay p { font-size: 12px; opacity: 0.8; }
+
+    .swipe-hint { font-size: 12px; color: #6b7280; font-weight: 600; text-align: center; margin-bottom: 4px; }
+
+    /* BOTONES */
+    .btn-container { width: 100%; max-width: 340px; margin-bottom: 6px; }
+    .game-btn { width: 100%; background: linear-gradient(135deg, #0066ff, #0040dd); color: white; border: none; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .game-btn:active { transform: scale(0.98); }
+
+    /* MODO OSCURO */
+    body.dark-mode { background: #0b0f19; color: #fff; }
+    body.dark-mode .brand-title { color: #fff; }
+    body.dark-mode .back-btn, body.dark-mode .action-btn-top { background: #1e293b; border-color: #334155; color: #facc15; }
+    body.dark-mode .stats-board { background: #1e293b; border-color: #334155; color: #fff; }
+    body.dark-mode .game-canvas-container { background: #1e293b; border-color: #334155; }
+    body.dark-mode .swipe-hint { color: #94a3b8; }
+
+    .footer { text-align: center; font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Barra Superior -->
+    <div class="header-bar">
+      <a href="../../index.html" class="back-btn" title="Volver al Hub">
+        <i data-lucide="arrow-left" size="18"></i>
+      </a>
+      <h1 class="brand-title">OmniSnake 🐍</h1>
+      <button class="action-btn-top" onclick="toggleTheme()" title="Cambiar Tema">
+        <i data-lucide="moon" id="theme-icon" size="18"></i>
+      </button>
+    </div>
+
+    <!-- Puntuación -->
+    <div class="stats-board">
+      <div class="stats-item">Puntuación<span id="score">0</span></div>
+      <div class="stats-item">Récord<span id="highScore">0</span></div>
+    </div>
+
+    <!-- Lienzo del juego -->
+    <div class="game-canvas-container" id="touchArea">
+      <canvas id="snakeCanvas" width="400" height="400"></canvas>
+      <div class="canvas-overlay" id="startOverlay">
+        <h2>OmniSnake 🐍</h2>
+        <p>Presiona "Jugar" para comenzar</p>
+      </div>
+    </div>
+
+    <div class="swipe-hint">👉 Desliza el dedo sobre el cuadro para moverte</div>
+
+    <!-- Botón de Iniciar / Reiniciar -->
+    <div class="btn-container">
+      <button class="game-btn" onclick="startGame()">
+        <i data-lucide="play" size="16"></i> Jugar / Reiniciar 🚀
+      </button>
+    </div>
+
+    <div class="footer">© 2026 OmniPlex Studio</div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const canvas = document.getElementById("snakeCanvas");
+    const ctx = canvas.getContext("2d");
+    const touchArea = document.getElementById("touchArea");
+    const startOverlay = document.getElementById("startOverlay");
+
+    const tileSize = 20;
+    const tileCount = canvas.width / tileSize;
+
+    let snake = [
+      { x: 10, y: 10 },
+      { x: 9, y: 10 },
+      { x: 8, y: 10 }
+    ];
+    let food = { x: 5, y: 5 };
+    let dx = 0;
+    let dy = 0;
+    let score = 0;
+    let highScore = localStorage.getItem("omni_snake_high") || 0;
+    let gameInterval = null;
+    let isRunning = false;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.getElementById("highScore").textContent = highScore;
+
+    // Dibujar estado inicial estático para que no se vea vacío
+    drawGame();
+
+    // Controles táctiles por gestos (Swipe)
+    touchArea.addEventListener("touchstart", (e) => {
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      e.preventDefault();
+    }, { passive: false });
+
+    touchArea.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    touchArea.addEventListener("touchend", (e) => {
+      if (!isRunning) return;
+      const touch = e.changedTouches[0];
+      const diffX = touch.clientX - touchStartX;
+      const diffY = touch.clientY - touchStartY;
+
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 30 && dx === 0) { dx = 1; dy = 0; }
+        else if (diffX < -30 && dx === 0) { dx = -1; dy = 0; }
+      } else {
+        if (diffY > 30 && dy === 0) { dx = 0; dy = 1; }
+        else if (diffY < -30 && dy === 0) { dx = 0; dy = -1; }
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    function startGame() {
+      startOverlay.style.display = "none";
+      snake = [
+        { x: 10, y: 10 },
+        { x: 9, y: 10 },
+        { x: 8, y: 10 }
+      ];
+      dx = 1;
+      dy = 0;
+      score = 0;
+      document.getElementById("score").textContent = score;
+      spawnFood();
+      
+      if (gameInterval) clearInterval(gameInterval);
+      gameInterval = setInterval(gameLoop, 120);
+      isRunning = true;
+    }
+
+    function gameLoop() {
+      moveSnake();
+      if (checkGameOver()) {
+        clearInterval(gameInterval);
+        isRunning = false;
+        startOverlay.style.display = "flex";
+        startOverlay.querySelector("h2").textContent = "¡Juego Terminado! 🎮";
+        startOverlay.querySelector("p").textContent = `Puntuación: ${score}. Toca Jugar`;
+        return;
+      }
+      drawGame();
+    }
+
+    function moveSnake() {
+      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        document.getElementById("score").textContent = score;
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("omni_snake_high", highScore);
+          document.getElementById("highScore").textContent = highScore;
+        }
+        spawnFood();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function spawnFood() {
+      food.x = Math.floor(Math.random() * tileCount);
+      food.y = Math.floor(Math.random() * tileCount);
+      snake.forEach(part => {
+        if (part.x === food.x && part.y === food.y) spawnFood();
+      });
+    }
+
+    function checkGameOver() {
+      const head = snake[0];
+      if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) return true;
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) return true;
+      }
+      return false;
+    }
+
+    function drawGame() {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Comida
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc((food.x * tileSize) + tileSize/2, (food.y * tileSize) + tileSize/2, tileSize/2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Serpiente
+      snake.forEach((part, index) => {
+        ctx.fillStyle = index === 0 ? '#22c55e' : '#16a34a';
+        ctx.fillRect(part.x * tileSize + 1, part.y * tileSize + 1, tileSize - 2, tileSize - 2);
+      });
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const themeIcon = document.getElementById('theme-icon');
+      if (document.body.classList.contains('dark-mode')) {
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+  </script>
+</body>
+  </html>
+  
