@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniQR - Generador de Códigos QR</title>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+    .app-container { width: 100%; max-width: 420px; padding: 16px; display: flex; flex-direction: column; }
+    
+    /* HEADER */
+    .header-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; }
+    .back-btn, .action-btn-top { width: 42px; height: 42px; background: #fff; border: 1px solid #e5e7eb; color: #4b5563; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-decoration: none; }
+    .back-btn:active, .action-btn-top:active { transform: scale(0.92); }
+    
+    .brand-title { font-size: 18px; font-weight: 800; color: #111827; }
+
+    /* TARJETA PRINCIPAL */
+    .qr-card { background: #fff; border-radius: 20px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.05); margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; }
+    
+    /* CAJA DE TEXTO */
+    .input-group { width: 100%; margin-bottom: 16px; }
+    .input-label { font-size: 13px; font-weight: 700; color: #4b5563; margin-bottom: 8px; display: block; }
+    .qr-input { width: 100%; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; font-size: 13px; outline: none; background: #f9fafb; color: #1f2937; transition: border-color 0.2s; }
+    .qr-input:focus { border-color: #0066ff; background: #fff; }
+
+    /* CONTENEDOR DEL QR */
+    .qr-display-box { background: #fff; padding: 16px; border-radius: 16px; border: 2px dashed #e5e7eb; display: flex; justify-content: center; align-items: center; min-height: 200px; width: 100%; margin-bottom: 16px; position: relative; }
+    .qr-image { max-width: 180px; height: auto; border-radius: 8px; display: block; }
+
+    /* BOTÓN DESCARGAR */
+    .download-btn { width: 100%; background: linear-gradient(135deg, #0066ff, #0040dd); color: white; border: none; padding: 14px; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3); transition: transform 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    .download-btn:active { transform: scale(0.98); }
+    .download-btn:disabled { background: #9ca3af; box-shadow: none; cursor: not-allowed; opacity: 0.6; }
+
+    /* MODO OSCURO */
+    body.dark-mode { background: #0b0f19; color: #fff; }
+    body.dark-mode .brand-title { color: #fff; }
+    body.dark-mode .back-btn, body.dark-mode .action-btn-top { background: #1e293b; border-color: #334155; color: #facc15; }
+    body.dark-mode .qr-card { background: #1e293b; border-color: #334155; }
+    body.dark-mode .input-label { color: #cbd5e1; }
+    body.dark-mode .qr-input { background: #0f172a; border-color: #334155; color: #fff; }
+    body.dark-mode .qr-display-box { background: #fff; border-color: #334155; }
+
+    .footer { text-align: center; font-size: 12px; color: #9ca3af; margin-top: auto; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Barra Superior -->
+    <div class="header-bar">
+      <a href="../index.html" class="back-btn" title="Volver al Hub">
+        <i data-lucide="arrow-left" size="20"></i>
+      </a>
+      <h1 class="brand-title">OmniQR</h1>
+      <button class="action-btn-top" onclick="toggleTheme()" title="Cambiar Tema">
+        <i data-lucide="moon" id="theme-icon"></i>
+      </button>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="qr-card">
+      
+      <div class="input-group">
+        <label class="input-label" for="qrText">Enlace o Texto para el QR:</label>
+        <input type="text" id="qrText" class="qr-input" placeholder="Ej: https://omniplex.app o Pago Móvil..." oninput="generateQR()">
+      </div>
+
+      <!-- Área de previsualización -->
+      <div class="qr-display-box" id="qrContainer">
+        <img id="qrImage" class="qr-image" src="" alt="Código QR">
+      </div>
+
+      <button id="downloadBtn" class="download-btn" onclick="downloadQRDirectly()" disabled>
+        <i data-lucide="download" size="18"></i> Descargar QR 🚀
+      </button>
+
+    </div>
+
+    <div class="footer">© 2026 OmniPlex Studio</div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+    let currentQrUrl = "";
+
+    function generateQR() {
+      const text = document.getElementById('qrText').value.trim();
+      const qrImage = document.getElementById('qrImage');
+      const downloadBtn = document.getElementById('downloadBtn');
+
+      if (text === "") {
+        qrImage.src = "";
+        currentQrUrl = "";
+        downloadBtn.disabled = true;
+        return;
+      }
+
+      currentQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(text)}`;
+      qrImage.src = currentQrUrl;
+      downloadBtn.disabled = false;
+    }
+
+    // Descarga real de la imagen al almacenamiento local
+    async function downloadQRDirectly() {
+      if (!currentQrUrl) return;
+
+      const downloadBtn = document.getElementById('downloadBtn');
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = '<i data-lucide="loader" size="18"></i> Descargando...';
+      if (window.lucide) lucide.createIcons();
+
+      try {
+        const response = await fetch(currentQrUrl);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = 'OmniQR_Codigo.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch (error) {
+        // En caso de bloqueo por origen cruzado, abre directamente la imagen para guardar
+        window.open(currentQrUrl, '_blank');
+      }
+
+      downloadBtn.disabled = false;
+      downloadBtn.innerHTML = '<i data-lucide="download" size="18"></i> Descargar QR 🚀';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const themeIcon = document.getElementById('theme-icon');
+      if (document.body.classList.contains('dark-mode')) {
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+
+    window.onload = () => {
+      document.getElementById('qrText').value = "https://omniplex.app";
+      generateQR();
+    };
+  </script>
+</body>
+</html>
