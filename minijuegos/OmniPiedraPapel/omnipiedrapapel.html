@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OmniPiedraPapel - OmniPlex</title>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+    .app-container { width: 100%; max-width: 420px; padding: 12px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: space-between; }
+    
+    /* HEADER */
+    .header-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; }
+    .back-btn, .action-btn-top { width: 38px; height: 38px; background: #fff; border: 1px solid #e5e7eb; color: #4b5563; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-decoration: none; }
+    .back-btn:active, .action-btn-top:active { transform: scale(0.92); }
+    .brand-title { font-size: 16px; font-weight: 800; color: #111827; }
+
+    /* ESTADÍSTICAS / MARCADOR */
+    .stats-board { width: 100%; display: flex; justify-content: space-between; background: #fff; padding: 10px 14px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); font-weight: 700; font-size: 12px; text-align: center; }
+    .stats-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .stats-item span { color: #0066ff; font-size: 15px; margin-top: 2px; }
+
+    /* ARENA DE BATALLA */
+    .battle-arena { width: 100%; max-width: 360px; background: #fff; border-radius: 20px; border: 2px solid #e2e8f0; padding: 20px; display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); text-align: center; }
+    
+    .battle-display { display: flex; justify-content: space-around; width: 100%; align-items: center; margin-bottom: 16px; }
+    .player-side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .player-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; font-weight: 800; }
+    .battle-icon-box { width: 70px; height: 70px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.03); }
+    
+    .vs-text { font-size: 16px; font-weight: 900; color: #94a3b8; font-style: italic; }
+
+    .result-message { font-size: 16px; font-weight: 800; color: #111827; min-height: 24px; margin-top: 4px; }
+
+    /* SELECCIÓN DE BOTONES (TÁCTIL) */
+    .choices-container { width: 100%; max-width: 360px; display: flex; gap: 10px; margin-bottom: 12px; }
+    .choice-btn { flex: 1; background: #fff; border: 2px solid #e2e8f0; border-radius: 16px; padding: 14px 0; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .choice-btn:active { transform: scale(0.92); border-color: #0066ff; background: #eff6ff; }
+    .choice-emoji { font-size: 28px; }
+    .choice-name { font-size: 11px; font-weight: 700; color: #4b5563; }
+
+    /* BOTÓN REINICIAR */
+    .btn-container { width: 100%; max-width: 360px; margin-bottom: 10px; }
+    .game-btn { width: 100%; background: linear-gradient(135deg, #0066ff, #0040dd); color: white; border: none; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .game-btn:active { transform: scale(0.98); }
+
+    /* MODO OSCURO */
+    body.dark-mode { background: #0b0f19; color: #fff; }
+    body.dark-mode .brand-title { color: #fff; }
+    body.dark-mode .back-btn, body.dark-mode .action-btn-top { background: #1e293b; border-color: #334155; color: #facc15; }
+    body.dark-mode .stats-board, body.dark-mode .battle-arena, body.dark-mode .choice-btn { background: #1e293b; border-color: #334155; color: #fff; }
+    body.dark-mode .battle-icon-box { background: #0f172a; border-color: #334155; }
+    body.dark-mode .player-label, body.dark-mode .choice-name { color: #94a3b8; }
+    body.dark-mode .result-message { color: #fff; }
+
+    .footer { text-align: center; font-size: 11px; color: #9ca3af; margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Barra Superior -->
+    <div class="header-bar">
+      <a href="../../index.html" class="back-btn" title="Volver al Hub">
+        <i data-lucide="arrow-left" size="18"></i>
+      </a>
+      <h1 class="brand-title">OmniPiedraPapel ✊</h1>
+      <button class="action-btn-top" onclick="toggleTheme()" title="Cambiar Tema">
+        <i data-lucide="moon" id="theme-icon" size="18"></i>
+      </button>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-board">
+      <div class="stats-item">Victorias <span id="wins">0</span></div>
+      <div class="stats-item">Derrotas <span id="losses">0</span></div>
+      <div class="stats-item">Empates <span id="draws">0</span></div>
+    </div>
+
+    <!-- Arena de Combate -->
+    <div class="battle-arena">
+      <div class="battle-display">
+        <div class="player-side">
+          <span class="player-label">Tú</span>
+          <div class="battle-icon-box" id="playerChoiceDisplay">❓</div>
+        </div>
+        <div class="vs-text">VS</div>
+        <div class="player-side">
+          <span class="player-label">IA</span>
+          <div class="battle-icon-box" id="aiChoiceDisplay">❓</div>
+        </div>
+      </div>
+      <div class="result-message" id="resultMessage">¡Elige tu arma y combate! 🎮</div>
+    </div>
+
+    <!-- Opciones Táctiles -->
+    <div class="choices-container">
+      <button class="choice-btn" onclick="play('Piedra')">
+        <span class="choice-emoji">✊</span>
+        <span class="choice-name">Piedra</span>
+      </button>
+      <button class="choice-btn" onclick="play('Papel')">
+        <span class="choice-emoji">✋</span>
+        <span class="choice-name">Papel</span>
+      </button>
+      <button class="choice-btn" onclick="play('Tijera')">
+        <span class="choice-emoji">✌️</span>
+        <span class="choice-name">Tijera</span>
+      </button>
+    </div>
+
+    <!-- Botón Reiniciar Estadísticas -->
+    <div class="btn-container">
+      <button class="game-btn" onclick="resetStats()">
+        <i data-lucide="rotate-cw" size="16"></i> Reiniciar Marcador 🚀
+      </button>
+    </div>
+
+    <div class="footer">© 2026 OmniPlex Studio</div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    let wins = parseInt(localStorage.getItem("omni_rps_wins")) || 0;
+    let losses = parseInt(localStorage.getItem("omni_rps_losses")) || 0;
+    let draws = parseInt(localStorage.getItem("omni_rps_draws")) || 0;
+
+    updateScoreBoard();
+
+    const emojis = {
+      'Piedra': '✊',
+      'Papel': '✋',
+      'Tijera': '✌️'
+    };
+
+    function play(playerSelection) {
+      const options = ['Piedra', 'Papel', 'Tijera'];
+      const aiSelection = options[Math.floor(Math.random() * options.length)];
+
+      document.getElementById("playerChoiceDisplay").textContent = emojis[playerSelection];
+      document.getElementById("aiChoiceDisplay").textContent = emojis[aiSelection];
+
+      const resultMsg = document.getElementById("resultMessage");
+
+      if (playerSelection === aiSelection) {
+        draws++;
+        resultMsg.textContent = "¡Empate técnico! 🤝";
+        resultMsg.style.color = "#f59e0b";
+      } else if (
+        (playerSelection === 'Piedra' && aiSelection === 'Tijera') ||
+        (playerSelection === 'Papel' && aiSelection === 'Piedra') ||
+        (playerSelection === 'Tijera' && aiSelection === 'Papel')
+      ) {
+        wins++;
+        resultMsg.textContent = "¡Victoria Épica! 🎉";
+        resultMsg.style.color = "#22c55e";
+      } else {
+        losses++;
+        resultMsg.textContent = "¡Punto para la IA! 🤖";
+        resultMsg.style.color = "#ef4444";
+      }
+
+      localStorage.setItem("omni_rps_wins", wins);
+      localStorage.setItem("omni_rps_losses", losses);
+      localStorage.setItem("omni_rps_draws", draws);
+      updateScoreBoard();
+    }
+
+    function updateScoreBoard() {
+      document.getElementById("wins").textContent = wins;
+      document.getElementById("losses").textContent = losses;
+      document.getElementById("draws").textContent = draws;
+    }
+
+    function resetStats() {
+      wins = 0;
+      losses = 0;
+      draws = 0;
+      localStorage.removeItem("omni_rps_wins");
+      localStorage.removeItem("omni_rps_losses");
+      localStorage.removeItem("omni_rps_draws");
+      updateScoreBoard();
+      document.getElementById("playerChoiceDisplay").textContent = "❓";
+      document.getElementById("aiChoiceDisplay").textContent = "❓";
+      document.getElementById("resultMessage").textContent = "¡Marcador reiniciado! A jugar 🚀";
+      document.getElementById("resultMessage").style.color = "";
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const themeIcon = document.getElementById('theme-icon');
+      if (document.body.classList.contains('dark-mode')) {
+        themeIcon.setAttribute('data-lucide', 'sun');
+      } else {
+        themeIcon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
