@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>OmniClicker Light Deluxe</title>
+  <style>
+    :root {
+      --bg: #f0f2f5; --card: #ffffff; --text: #24292e; --sub: #57606a;
+      --blue: #0969da; --gold: #b08800; --red: #cf222e; --green: #1a7f37;
+    }
+    * { box-sizing: border-box; user-select: none; touch-action: manipulation; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 8px; overflow: hidden; }
+    .card { background: var(--card); padding: 14px; border-radius: 18px; text-align: center; border: 1px solid rgba(0,0,0,0.08); width: 100%; max-width: 340px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 8px; position: relative; }
+    
+    h1 { color: var(--blue); font-size: 1.2rem; }
+    .subtitle { color: var(--sub); font-size: 0.75rem; min-height: 20px; font-weight: 600; }
+    .mode-selector { display: flex; justify-content: center; gap: 4px; }
+    .mode-btn { background: #f6f8fa; border: 1px solid rgba(0,0,0,0.1); color: var(--sub); padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; cursor: pointer; }
+    .mode-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+    .stat-box { background: #f6f8fa; padding: 4px 2px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.04); display: flex; flex-direction: column; }
+    .stat-label { font-size: 0.5rem; color: var(--sub); text-transform: uppercase; font-weight: 700; }
+    .stat-value { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+    .stat-value.gold { color: var(--gold); }
+    .stat-value.warning { color: var(--red); }
+    
+    /* Barra de Combo / Energía */
+    .combo-wrapper { width: 100%; background: #e1e4e8; height: 6px; border-radius: 3px; overflow: hidden; }
+    .combo-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--gold)); transition: width 0.1s linear; }
+
+    .button-area { position: relative; margin: 2px auto; width: 110px; height: 110px; }
+    .tap-btn { width: 100%; height: 100%; background: linear-gradient(135deg, #0969da, #0550ae); border: none; border-radius: 50%; color: white; font-size: 1.1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(9,105,218,0.3); transition: transform 0.05s ease; display: flex; align-items: center; justify-content: center; }
+    .tap-btn:active { transform: scale(0.91); }
+    .tap-btn:disabled { background: #8c959f; box-shadow: none; color: #fff; cursor: not-allowed; }
+    
+    .float-num { position: absolute; color: var(--gold); font-weight: 900; font-size: 1.1rem; pointer-events: none; animation: floatUp 0.4s ease-out forwards; z-index: 10; }
+    @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-35px) scale(1.3); } }
+
+    /* Tienda de Mejoras */
+    .shop-container { background: #f6f8fa; border-radius: 8px; padding: 6px; border: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 4px; }
+    .shop-title { font-size: 0.6rem; font-weight: 800; color: var(--sub); text-transform: uppercase; text-align: left; }
+    .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .shop-btn { background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 4px; font-size: 0.6rem; font-weight: 700; color: var(--text); cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+    .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Historial */
+    .history-container { background: #f6f8fa; border-radius: 8px; padding: 4px 6px; border: 1px solid rgba(0,0,0,0.04); text-align: left; }
+    .history-title { font-size: 0.55rem; font-weight: 700; color: var(--sub); text-transform: uppercase; margin-bottom: 2px; }
+    .history-list { list-style: none; font-size: 0.65rem; display: flex; flex-direction: column; gap: 2px; max-height: 40px; overflow-y: auto; }
+    .history-item { display: flex; justify-content: space-between; color: var(--sub); padding: 1px 4px; border-radius: 3px; background: #fff; }
+    .history-item span:last-child { color: var(--gold); font-weight: 700; }
+
+    .action-btns { display: flex; gap: 6px; }
+    .btn { flex: 1; background: transparent; border: 1px solid rgba(0,0,0,0.15); color: var(--sub); padding: 6px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+    #confettiCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 99; }
+  </style>
+</head>
+<body>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="card" id="mainCard">
+    <h1>OmniClicker</h1>
+
+    <!-- Modos de Juego -->
+    <div class="mode-selector">
+      <button class="mode-btn" onclick="setMode(5)">5s</button>
+      <button class="mode-btn active" onclick="setMode(10)">10s</button>
+      <button class="mode-btn" onclick="setMode(15)">15s</button>
+      <button class="mode-btn" onclick="setMode('inf')">Resistencia ⚡</button>
+    </div>
+
+    <p class="subtitle" id="statusText">¡Toca para iniciar!</p>
+
+    <!-- Barra de Combo -->
+    <div class="combo-wrapper"><div class="combo-fill" id="comboFill"></div></div>
+
+    <div class="dashboard-grid">
+      <div class="stat-box"><span class="stat-label">Tiempo</span><span class="stat-value" id="timer">10</span></div>
+      <div class="stat-box"><span class="stat-label">Puntos</span><span class="stat-value gold" id="score">0</span></div>
+      <div class="stat-box"><span class="stat-label">Combo</span><span class="stat-value" id="comboTxt">x1</span></div>
+      <div class="stat-box"><span class="stat-label">Monedas</span><span class="stat-value gold" id="coins">0</span></div>
+    </div>
+
+    <div class="button-area" id="btnArea">
+      <button class="tap-btn" id="tapBtn">¡TOCA!</button>
+    </div>
+
+    <!-- Tienda de Mejoras -->
+    <div class="shop-container">
+      <div class="shop-title">Tienda de Mejoras (Virtual)</div>
+      <div class="shop-grid">
+        <button class="shop-btn" id="buyClick" onclick="buyUpgrade('click')">
+          <span>Multiplicador +1</span><span style="color:var(--gold)" id="costClick">10 🪙</span>
+        </button>
+        <button class="shop-btn" id="buyAuto" onclick="buyUpgrade('auto')">
+          <span>Auto-Clicker (1/s)</span><span style="color:var(--gold)" id="costAuto">25 🪙</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="history-container">
+      <div class="history-title">Últimas Partidas</div>
+      <ul class="history-list" id="historyList"></ul>
+    </div>
+
+    <div class="action-btns">
+      <button class="btn" id="resetBtn">Reiniciar</button>
+    </div>
+  </div>
+
+  <script>
+    let mode = 10, score = 0, timeLeft = 10, combo = 1, comboEnergy = 100, timerInterval = null, comboInterval = null, autoInterval = null, gameStarted = false;
+    let clickPower = 1, autoLevel = 0;
+    let totalCoins = parseInt(localStorage.getItem('omni_coins')) || 0;
+    let historyData = JSON.parse(localStorage.getItem('omni_history')) || [];
+
+    const scoreEl = document.getElementById('score'), timerEl = document.getElementById('timer'), coinsEl = document.getElementById('coins'), comboTxt = document.getElementById('comboTxt'), comboFill = document.getElementById('comboFill'), statusText = document.getElementById('statusText'), tapBtn = document.getElementById('tapBtn'), resetBtn = document.getElementById('resetBtn'), historyList = document.getElementById('historyList'), btnArea = document.getElementById('btnArea');
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq = 600, duration = 0.04) {
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function updateUI() {
+      scoreEl.textContent = score; coinsEl.textContent = totalCoins; comboTxt.textContent = `x${combo}`;
+      document.getElementById('costClick').textContent = `${clickPower * 10} 🪙`;
+      document.getElementById('costAuto').textContent = `${(autoLevel + 1) * 25} 🪙`;
+      document.getElementById('buyClick').disabled = totalCoins < clickPower * 10;
+      document.getElementById('buyAuto').disabled = totalCoins < (autoLevel + 1) * 25;
+    }
+
+    function setMode(m) {
+      if (gameStarted) return;
+      mode = m; timeLeft = m === 'inf' ? 100 : m;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', (m === 'inf' ? 'Resistencia ⚡' : m+'s') === b.textContent));
+      resetGame();
+    }
+
+    tapBtn.addEventListener('click', (e) => {
+      if (!gameStarted) startTimer();
+      if (timeLeft > 0) {
+        comboEnergy = Math.min(100, comboEnergy + 15);
+        if (comboEnergy > 80) combo = 3; else if (comboEnergy > 40) combo = 2; else combo = 1;
+        
+        let pts = clickPower * combo;
+        score += pts;
+
+        playBeep(400 + combo * 150);
+        spawnFloatingText(e, `+${pts}`);
+        updateUI();
+      }
+    });
+
+    function spawnFloatingText(e, txt) {
+      const float = document.createElement('div');
+      float.className = 'float-num'; float.textContent = txt;
+      const rect = btnArea.getBoundingClientRect();
+      float.style.left = `${(e.clientX || rect.left + 50) - rect.left - 10}px`;
+      float.style.top = `${(e.clientY || rect.top + 50) - rect.top - 20}px`;
+      btnArea.appendChild(float);
+      setTimeout(() => float.remove(), 400);
+    }
+
+    function startTimer() {
+      gameStarted = true;
+      statusText.textContent = mode === 'inf' ? "¡Manten la energía alta!" : "¡Dale con todo!";
+
+      timerInterval = setInterval(() => {
+        if (mode === 'inf') {
+          timeLeft -= 1;
+        } else {
+          timeLeft--;
+        }
+        timerEl.textContent = timeLeft;
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+
+      comboInterval = setInterval(() => {
+        comboEnergy = Math.max(0, comboEnergy - 6);
+        comboFill.style.width = `${comboEnergy}%`;
+        if (comboEnergy < 20) combo = 1; else if (comboEnergy < 60) combo = 2;
+        comboTxt.textContent = `x${combo}`;
+      }, 100);
+
+      if (autoLevel > 0) {
+        autoInterval = setInterval(() => {
+          if (timeLeft > 0) { score += autoLevel; updateUI(); }
+        }, 1000);
+      }
+    }
+
+    function buyUpgrade(type) {
+      if (type === 'click' && totalCoins >= clickPower * 10) {
+        totalCoins -= clickPower * 10; clickPower++;
+      } else if (type === 'auto' && totalCoins >= (autoLevel + 1) * 25) {
+        totalCoins -= (autoLevel + 1) * 25; autoLevel++;
+      }
+      localStorage.setItem('omni_coins', totalCoins);
+      updateUI();
+    }
+
+    function endGame() {
+      clearInterval(timerInterval); clearInterval(comboInterval); clearInterval(autoInterval);
+      tapBtn.disabled = true; tapBtn.textContent = "FIN";
+      
+      let earnedCoins = Math.floor(score / 5);
+      totalCoins += earnedCoins;
+      localStorage.setItem('omni_coins', totalCoins);
+      
+      statusText.textContent = `¡Fin! +${earnedCoins} Monedas Virtuales`;
+      startConfetti();
+
+      historyData.unshift({ score: score, date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+      if (historyData.length > 4) historyData.pop();
+      localStorage.setItem('omni_history', JSON.stringify(historyData));
+      renderHistory(); updateUI();
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = historyData.length ? '' : `<li class="history-item"><span>Sin partidas aún</span><span>-</span></li>`;
+      historyData.forEach((item, i) => {
+        historyList.innerHTML += `<li class="history-item"><span>#${i+1} (${item.date})</span><span>${item.score} pts</span></li>`;
+      });
+    }
+
+    resetBtn.addEventListener('click', resetGame);
+
+    function resetGame() {
+      clearInterval(timerInterval); clearInterval(comboInterval); clearInterval(autoInterval);
+      score = 0; timeLeft = mode === 'inf' ? 100 : mode; comboEnergy = 0; combo = 1; gameStarted = false;
+      timerEl.textContent = timeLeft; comboFill.style.width = '0%';
+      statusText.textContent = "¡Toca para iniciar!";
+      tapBtn.disabled = false; tapBtn.textContent = "¡TOCA!";
+      updateUI();
+    }
+
+    const canvas = document.getElementById('confettiCanvas'), ctx = canvas.getContext('2d');
+    let confetti = [];
+    function startConfetti() {
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      confetti = Array.from({ length: 40 }, () => ({
+        x: Math.random() * canvas.width, y: -10, r: Math.random() * 5 + 3,
+        color: `hsl(${Math.random() * 360}, 100%, 50%)`, d: Math.random() * 5 + 2
+      }));
+      requestAnimationFrame(updateConfetti);
+    }
+    function updateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetti.forEach((p, i) => {
+        p.y += p.d;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill();
+        if (p.y > canvas.height) confetti[i] = null;
+      });
+      confetti = confetti.filter(Boolean);
+      if (confetti.length) requestAnimationFrame(updateConfetti);
+    }
+
+    renderHistory(); updateUI();
+  </script>
+</body>
+</html>
