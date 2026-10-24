@@ -11,9 +11,8 @@ function openMenu() {
   }
   
   overlay.classList.add('active');
-  document.body.style.overflow = 'hidden'; // Evita el scroll de fondo en móviles al abrir el menú
+  document.body.style.overflow = 'hidden';
 
-  // Enfocar automáticamente el input de búsqueda si existe
   setTimeout(() => {
     const searchInput = overlay.querySelector('.menu-search-input');
     if (searchInput) searchInput.focus();
@@ -25,11 +24,11 @@ function closeMenu() {
   const overlay = document.getElementById('omni-menu-overlay');
   if (overlay) {
     overlay.classList.remove('active');
-    document.body.style.overflow = ''; // Restablece el scroll de la página
+    document.body.style.overflow = '';
   }
 }
 
-// Navegación suave a secciones y cierre automático del menú
+// Navegación suave a secciones del Hub principal
 function navigateToSection(id) {
   closeMenu();
   setTimeout(() => {
@@ -40,7 +39,51 @@ function navigateToSection(id) {
   }, 150);
 }
 
-// Estructura HTML del Menú vinculada con menu.css
+// Función para abrir el Modal con el QR de la propia web
+function openWebQRModal() {
+  closeMenu();
+  
+  const currentURL = window.location.href;
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentURL)}`;
+
+  let modal = document.getElementById('omni-qr-web-modal');
+  if (!modal) {
+    const modalHTML = `
+      <div class="menu-overlay active" id="omni-qr-web-modal" onclick="closeWebQRModal()">
+        <div class="menu-container qr-share-container" onclick="event.stopPropagation()">
+          <div class="menu-header">
+            <h3>📱 Escanea OmniPlex</h3>
+            <button class="menu-close-btn" onclick="closeWebQRModal()">
+              <i data-lucide="x" size="18"></i>
+            </button>
+          </div>
+          <p>Apunta la cámara para abrir esta app en otro dispositivo:</p>
+          <div class="qr-share-box">
+            <img id="omniWebQrImg" src="${qrApiUrl}" alt="QR OmniPlex">
+          </div>
+          <button class="menu-close-btn" style="width: 100%; border-radius: 10px; background: #0066ff; color: white; font-weight: 700; height: 42px;" onclick="closeWebQRModal()">
+            Listo 👍
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+  } else {
+    document.getElementById('omniWebQrImg').src = qrApiUrl;
+    modal.classList.add('active');
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeWebQRModal() {
+  const modal = document.getElementById('omni-qr-web-modal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+// Estructura HTML del Menú (Sin minijuegos)
 function createMenuDOM() {
   const menuHTML = `
     <div class="menu-overlay" id="omni-menu-overlay" onclick="closeMenu()">
@@ -62,12 +105,20 @@ function createMenuDOM() {
           <a href="#" class="menu-item" onclick="closeMenu(); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">
             <i data-lucide="home" size="18"></i> Inicio / Hub
           </a>
+          
           <a href="#" class="menu-item" onclick="navigateToSection('section-finanzas'); return false;">
             <i data-lucide="landmark" size="18"></i> Finanzas & Utilidades
           </a>
+
           <a href="#" class="menu-item" onclick="navigateToSection('section-juegos'); return false;">
             <i data-lucide="gamepad-2" size="18"></i> Juegos & Entretenimiento
           </a>
+
+          <!-- OPCIÓN PARA COMPARTIR QR -->
+          <a href="#" class="menu-item" onclick="openWebQRModal(); return false;">
+            <i data-lucide="qr-code" size="18"></i> Compartir App (Código QR)
+          </a>
+
           <a href="#" class="menu-item" onclick="navigateToSection('section-comentarios'); return false;">
             <i data-lucide="message-square" size="18"></i> Dejar un Comentario
           </a>
@@ -79,7 +130,6 @@ function createMenuDOM() {
 
   document.body.insertAdjacentHTML('beforeend', menuHTML);
   
-  // Renderizar iconos de Lucide si la librería está cargada
   if (window.lucide) {
     lucide.createIcons();
   }
@@ -96,9 +146,10 @@ function filterFromMenu(query) {
   }
 }
 
-// Cerrar menú con la tecla 'Escape' (Mejora de accesibilidad para computadoras)
+// Cerrar menús con la tecla Escape
 document.addEventListener('keydown', function(event) {
   if (event.key === 'Escape') {
     closeMenu();
+    closeWebQRModal();
   }
 });
