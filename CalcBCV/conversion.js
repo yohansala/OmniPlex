@@ -5,14 +5,14 @@ if (window.lucide) {
 
 // ==========================================
 // ACTUALIZA AQUÍ LAS TASAS MANUALMENTE
-// (Copiadas directo del reporte de WhatsApp)
+// (Copiadas directo del reporte del BCV)
 // ==========================================
 let rates = { 
-  USD: 887.30200000, 
-  EUR: 994.03555758, 
-  CNY: 133.03476918, 
-  TRY: 17.84008220, 
-  RUB: 11.00248494 
+  USD: 888.11830000, 
+  EUR: 989.71903352, 
+  CNY: 133.22107552, 
+  TRY: 17.83932484, 
+  RUB: 11.02567721 
 };
 
 let currentCurrency = 'USD';
