@@ -8,11 +8,11 @@ if (window.lucide) {
 // (Copiadas directo del reporte del BCV)
 // ==========================================
 let rates = { 
-  USD: 888.11830000, 
-  EUR: 989.71903352, 
-  CNY: 133.22107552, 
-  TRY: 17.83932484, 
-  RUB: 11.02567721 
+  USD: 888.89090000, 
+  EUR: 989.38890515, 
+  CNY: 133.35697247, 
+  TRY: 17.83603481, 
+  RUB: 11.07381748 
 };
 
 let currentCurrency = 'USD';
