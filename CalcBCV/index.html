@@ -2,16 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>CalcBCV - Tasas Oficiales BCV</title>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#f3f4f6">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: background 0.2s, color 0.2s; }
-    body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; min-height: 100vh; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: background 0.2s, color 0.2s; user-select: none; -webkit-user-select: none; }
+    body { background: #f3f4f6; color: #1f2937; display: flex; justify-content: center; min-height: 100vh; animation: fadeIn 0.4s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    
     .app-container { width: 100%; max-width: 420px; padding: 16px; display: flex; flex-direction: column; }
     
+    /* ALERTA TASA PERSONALIZADA */
+    .custom-alert { background: #fef3c7; border: 1px solid #f59e0b; color: #b45309; font-size: 11px; font-weight: 700; text-align: center; padding: 6px; border-radius: 10px; margin-bottom: 12px; display: none; }
+
     /* HEADER */
     .header-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; }
     .action-btn-top { width: 42px; height: 42px; background: #fff; border: 1px solid #e5e7eb; color: #4b5563; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -26,29 +31,33 @@
     .bcv-button { background: #0066ff; color: #fff; font-weight: 700; font-size: 17px; padding: 12px; border-radius: 25px; text-align: center; width: 85%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,102,255,0.3); }
     .bcv-button:active { transform: scale(0.98); }
 
-    /* MONTOS RÁPIDOS */
-    .quick-amounts { display: flex; gap: 6px; margin-bottom: 16px; }
-    .quick-btn { flex: 1; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0066ff; font-weight: 700; font-size: 13px; padding: 8px 0; border-radius: 10px; cursor: pointer; }
+    /* MONTOS Y PORCENTAJES RÁPIDOS */
+    .quick-amounts { display: flex; gap: 6px; margin-bottom: 8px; }
+    .quick-btn { flex: 1; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0066ff; font-weight: 700; font-size: 12px; padding: 8px 0; border-radius: 10px; cursor: pointer; }
     .quick-btn:active { background: #0066ff; color: #fff; }
     .clear-btn { background: #fef2f2; border-color: #fecaca; color: #ef4444; }
     .clear-btn:active { background: #ef4444; color: #fff; }
+    .pct-btn { background: #f0fdf4; border-color: #dcfce7; color: #16a34a; font-size: 11px; }
 
     /* INPUTS */
-    .input-group { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding: 10px 0; margin-bottom: 8px; }
+    .input-group { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding: 10px 0; margin-bottom: 8px; cursor: pointer; }
     .currency-label { font-size: 20px; font-weight: 700; width: 45px; }
-    .currency-input { background: transparent; border: none; font-size: 20px; text-align: right; width: 100%; outline: none; font-weight: 600; padding-right: 10px; color: inherit; }
+    .currency-input { background: transparent; border: none; font-size: 20px; text-align: right; width: 100%; outline: none; font-weight: 600; padding-right: 10px; color: inherit; pointer-events: auto; }
     .copy-btn { color: #888; background: none; border: none; cursor: pointer; }
 
     /* REPORTE & TASAS */
-    .share-report-btn { margin-top: 12px; background: #22c55e; color: #fff; font-weight: 700; font-size: 14px; padding: 10px; border-radius: 12px; border: none; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+    .share-report-btn { margin-top: 12px; background: #22c55e; color: #fff; font-weight: 700; font-size: 14px; padding: 10px; border-radius: 12px; border: none; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
+    .share-report-btn:active { transform: scale(0.98); }
+    
     .rates-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .rates-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: #888; font-weight: 700; }
-    .update-time { font-size: 11px; color: #9ca3af; }
+    .update-time { font-size: 11px; color: #0066ff; font-weight: 700; background: rgba(0, 102, 255, 0.08); padding: 2px 8px; border-radius: 6px; }
     .rates-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .rate-box { background: #f8fafc; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; }
+    .rate-box { background: #f8fafc; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; position: relative; }
     .rate-box:active { transform: scale(0.96); }
     .rate-name { font-size: 13px; color: #6b7280; font-weight: 600; }
     .rate-value { font-size: 16px; font-weight: 800; color: #0066ff; margin-top: 2px; }
+    .rate-hint { font-size: 9px; color: #9ca3af; display: block; margin-top: 1px; }
 
     /* HISTORIAL */
     .history-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
@@ -58,32 +67,39 @@
     /* MODO OSCURO */
     body.dark-mode { background: #000; color: #fff; }
     body.dark-mode .app-title { color: #fff; }
+    body.dark-mode .custom-alert { background: #451a03; border-color: #b45309; color: #fcd34d; }
     body.dark-mode .action-btn-top { background: #1e1e1e; border-color: #333; color: #facc15; }
     body.dark-mode #clear-history-btn { color: #ef4444; }
     body.dark-mode .main-card, body.dark-mode .rates-card, body.dark-mode .history-card { background: #1a1a1a; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
-    body.dark-mode .quick-btn { background: #262626; border-color: #333; }
+    body.dark-mode .quick-btn { background: #262626; border-color: #333; color: #60a5fa; }
+    body.dark-mode .pct-btn { background: #064e3b; border-color: #065f46; color: #4ade80; }
     body.dark-mode .clear-btn { background: #3f1d1d; border-color: #5c2424; color: #f87171; }
     body.dark-mode .input-group, body.dark-mode .history-item { border-bottom-color: #333; }
     body.dark-mode .rate-box { background: #222; border-color: #333; }
     body.dark-mode .history-val { color: #fff; }
 
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <div class="app-container">
+    <!-- Alerta de tasa personalizada -->
+    <div id="custom-rate-alert" class="custom-alert">⚠️ ATENCIÓN: Usando Tasa Personalizada</div>
+
     <div class="header-bar">
-      <button class="action-btn-top" id="clear-history-btn" onclick="clearHistory()"><i data-lucide="trash-2" size="18"></i></button>
-      <div class="app-title-container" onclick="fetchAllRates(true)">
+      <button class="action-btn-top" id="clear-history-btn" onclick="clearHistory()" title="Borrar historial"><i data-lucide="trash-2" size="18"></i></button>
+      <div class="app-title-container" onclick="fetchAllRates(true)" title="Actualizar tasas">
         <h1 class="app-title">CalcBCV</h1>
         <i data-lucide="refresh-cw" size="18" id="refresh-icon" style="color:#0066ff"></i>
       </div>
-      <button class="action-btn-top" onclick="toggleTheme()"><i data-lucide="moon" id="theme-icon"></i></button>
+      <button class="action-btn-top" onclick="toggleTheme()" title="Cambiar tema"><i data-lucide="moon" id="theme-icon"></i></button>
     </div>
 
     <div class="main-card">
       <div class="bcv-button" onclick="cycleCurrency()"><span id="bcv-button-text">Dólar BCV</span> <i data-lucide="arrow-left-right" size="18"></i></div>
+      
+      <!-- Fila de sumas rápidas -->
       <div class="quick-amounts">
         <button class="quick-btn clear-btn" onclick="clearInput()">C</button>
         <button class="quick-btn" onclick="addAmount(1)">+1</button>
@@ -93,27 +109,60 @@
         <button class="quick-btn" onclick="addAmount(50)">+50</button>
         <button class="quick-btn" onclick="addAmount(100)">+100</button>
       </div>
-      <div class="input-group">
+
+      <!-- Fila de porcentajes de ganancia rápidos -->
+      <div class="quick-amounts">
+        <button class="quick-btn pct-btn" onclick="addPercentage(5)">+5%</button>
+        <button class="quick-btn pct-btn" onclick="addPercentage(10)">+10%</button>
+        <button class="quick-btn pct-btn" onclick="addPercentage(15)">+15%</button>
+        <button class="quick-btn pct-btn" onclick="addPercentage(20)">+20%</button>
+        <button class="quick-btn pct-btn" onclick="addPercentage(30)">+30%</button>
+      </div>
+
+      <div class="input-group" onclick="copyValue('foreign-input')" title="Toca para copiar">
         <span class="currency-label" id="foreign-symbol">$</span>
         <input type="number" id="foreign-input" class="currency-input" value="1.00" step="any">
-        <button class="copy-btn" onclick="copyValue('foreign-input')"><i data-lucide="copy" size="20"></i></button>
+        <button class="copy-btn"><i data-lucide="copy" size="20"></i></button>
       </div>
-      <div class="input-group">
+      <div class="input-group" onclick="copyValue('bs-input')" title="Toca para copiar">
         <span class="currency-label">Bs</span>
-        <input type="number" id="bs-input" class="currency-input" value="884.75" step="any">
-        <button class="copy-btn" onclick="copyValue('bs-input')"><i data-lucide="copy" size="20"></i></button>
+        <input type="number" id="bs-input" class="currency-input" value="889.58" step="any">
+        <button class="copy-btn"><i data-lucide="copy" size="20"></i></button>
       </div>
       <button class="share-report-btn" onclick="shareReport()"><i data-lucide="share-2" size="18"></i> Copiar Reporte WhatsApp</button>
     </div>
 
     <div class="rates-card">
-      <div class="rates-header"><div class="rates-title">Tasas Oficiales BCV</div><div class="update-time" id="update-time">Actualizado</div></div>
+      <div class="rates-header">
+        <div class="rates-title">Tasas Oficiales BCV</div>
+        <div class="update-time" id="update-time">02/11/2026</div>
+      </div>
       <div class="rates-grid">
-        <div class="rate-box" onclick="setCurrency('USD')"><div class="rate-name">Dólar ($)</div><div class="rate-value" id="display-usd-rate">Bs. --</div></div>
-        <div class="rate-box" onclick="setCurrency('EUR')"><div class="rate-name">Euro (€)</div><div class="rate-value" id="display-eur-rate">Bs. --</div></div>
-        <div class="rate-box" onclick="setCurrency('CNY')"><div class="rate-name">Yuan (¥)</div><div class="rate-value" id="display-cny-rate">Bs. --</div></div>
-        <div class="rate-box" onclick="setCurrency('TRY')"><div class="rate-name">Lira (₺)</div><div class="rate-value" id="display-try-rate">Bs. --</div></div>
-        <div class="rate-box" onclick="setCurrency('RUB')" style="grid-column: span 2;"><div class="rate-name">Rublo (₽)</div><div class="rate-value" id="display-rub-rate">Bs. --</div></div>
+        <div class="rate-box" onclick="setCurrency('USD')" ondblclick="activarTasaPersonalizada('USD')">
+          <div class="rate-name">Dólar ($)</div>
+          <div class="rate-value" id="display-usd-rate">Bs. --</div>
+          <span class="rate-hint">Doble toque = Personalizar</span>
+        </div>
+        <div class="rate-box" onclick="setCurrency('EUR')" ondblclick="activarTasaPersonalizada('EUR')">
+          <div class="rate-name">Euro (€)</div>
+          <div class="rate-value" id="display-eur-rate">Bs. --</div>
+          <span class="rate-hint">Doble toque = Personalizar</span>
+        </div>
+        <div class="rate-box" onclick="setCurrency('CNY')" ondblclick="activarTasaPersonalizada('CNY')">
+          <div class="rate-name">Yuan (¥)</div>
+          <div class="rate-value" id="display-cny-rate">Bs. --</div>
+          <span class="rate-hint">Doble toque = Personalizar</span>
+        </div>
+        <div class="rate-box" onclick="setCurrency('TRY')" ondblclick="activarTasaPersonalizada('TRY')">
+          <div class="rate-name">Lira (₺)</div>
+          <div class="rate-value" id="display-try-rate">Bs. --</div>
+          <span class="rate-hint">Doble toque = Personalizar</span>
+        </div>
+        <div class="rate-box" onclick="setCurrency('RUB')" ondblclick="activarTasaPersonalizada('RUB')" style="grid-column: span 2;">
+          <div class="rate-name">Rublo (₽)</div>
+          <div class="rate-value" id="display-rub-rate">Bs. --</div>
+          <span class="rate-hint">Doble toque = Personalizar</span>
+        </div>
       </div>
     </div>
 
@@ -125,7 +174,7 @@
 
   <div id="toast" class="toast">Copiado al portapapeles</div>
 
-  <!-- IMPORTACIÓN DEL SCRIPT EN JS -->
+  <!-- SCRIPT DE CONVERSIÓN -->
   <script src="conversion.js"></script>
 </body>
 </html>
