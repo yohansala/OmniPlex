@@ -4,19 +4,20 @@ if (window.lucide) {
 }
 
 // ==========================================
-// ACTUALIZA AQUÍ LAS TASAS MANUALMENTE
-// (Copiadas directo del reporte del BCV)
+// TASAS OFICIALES BCV (02/11/2026) + TASA PERSONALIZADA
 // ==========================================
-let rates = { 
-  USD: 889.57540000, 
-  EUR: 991.25386822, 
-  CNY: 133.71041635, 
-  TRY: 17.81048685, 
-  RUB: 11.01676834 
+let baseRates = { 
+  USD: 891.10, 
+  EUR: 997.92, 
+  CNY: 134.05, 
+  TRY: 17.83, 
+  RUB: 11.01 
 };
 
+let rates = { ...baseRates };
 let currentCurrency = 'USD';
 let history = [];
+let isCustomRateActive = false;
 
 const currencyConfig = {
   USD: { name: "Dólar BCV", symbol: "$" },
@@ -34,23 +35,33 @@ const bcvButtonText = document.getElementById('bcv-button-text');
 const updateTime = document.getElementById('update-time');
 const historyList = document.getElementById('history-list');
 const toast = document.getElementById('toast');
+const customAlert = document.getElementById('custom-rate-alert');
 
-// Cambiar la moneda seleccionada
+// Formatear números con puntos y comas (Ej: 15.000,50)
+function formatNumber(num) {
+  if (isNaN(num)) return "0.00";
+  return Number(num).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Cambiar moneda y guardar en LocalStorage
 function setCurrency(code) {
   currentCurrency = code;
+  localStorage.setItem('calc_bcv_currency', code);
+
   if (bcvButtonText) bcvButtonText.innerText = currencyConfig[code].name;
   if (foreignSymbol) foreignSymbol.innerText = currencyConfig[code].symbol;
+  
   recalculateBs();
   showToast("Seleccionado: " + currencyConfig[code].name);
 }
 
-// Rotar entre las monedas con el botón principal
+// Rotar entre monedas
 function cycleCurrency() {
   const keys = Object.keys(rates);
   setCurrency(keys[(keys.indexOf(currentCurrency) + 1) % keys.length]);
 }
 
-// Sumar montos rápidos (+1, +5, +10, etc.)
+// Sumar montos rápidos
 function addAmount(amount) {
   if (foreignInput) {
     foreignInput.value = ((parseFloat(foreignInput.value) || 0) + amount).toFixed(2);
@@ -58,7 +69,22 @@ function addAmount(amount) {
   }
 }
 
-// Limpiar inputs e historial
+// Sumar porcentajes de ganancia (Ej: +10%, +20%, etc.)
+function addPercentage(percent) {
+  if (foreignInput) {
+    let currentVal = parseFloat(foreignInput.value) || 0;
+    if (currentVal > 0) {
+      let added = currentVal * (1 + percent / 100);
+      foreignInput.value = added.toFixed(2);
+      recalculateBs();
+      showToast(`Aplicado +${percent}% de margen`);
+    } else {
+      showToast("Introduce un monto primero");
+    }
+  }
+}
+
+// Limpiar
 function clearInput() { 
   if (foreignInput) foreignInput.value = ''; 
   if (bsInput) bsInput.value = ''; 
@@ -67,20 +93,19 @@ function clearInput() {
 
 function clearHistory() { 
   history = []; 
-  if (historyList) {
-    historyList.innerHTML = '<div class="history-item" style="justify-content:center; color:#9ca3af;">Sin historial</div>'; 
-  }
+  localStorage.removeItem('calc_bcv_history');
+  renderHistoryUI();
   showToast("Historial borrado"); 
 }
 
-// Lógica de cálculo
+// Lógica de cálculo con formato
 function recalculateBs() {
   if (!foreignInput || !bsInput) return;
   const val = parseFloat(foreignInput.value);
   if (!isNaN(val)) {
     const totalBs = (val * rates[currentCurrency]).toFixed(2);
     bsInput.value = totalBs;
-    addHistory(val, totalBs, currencyConfig[currentCurrency].symbol);
+    addHistory(formatNumber(val), formatNumber(totalBs), currencyConfig[currentCurrency].symbol);
   } else { 
     bsInput.value = ''; 
   }
@@ -92,39 +117,84 @@ function recalculateForeign() {
   if (!isNaN(val)) {
     const foreignTotal = (val / rates[currentCurrency]).toFixed(2);
     foreignInput.value = foreignTotal;
-    addHistory(foreignTotal, val.toFixed(2), currencyConfig[currentCurrency].symbol);
+    addHistory(formatNumber(foreignTotal), formatNumber(val), currencyConfig[currentCurrency].symbol);
   } else { 
     foreignInput.value = ''; 
   }
 }
 
-// Escuchadores de eventos en tiempo real
 if (foreignInput) foreignInput.addEventListener('input', recalculateBs);
 if (bsInput) bsInput.addEventListener('input', recalculateForeign);
 
-// Manejo del historial
+// Manejo del Historial persistente
 function addHistory(foreign, bs, symbol) {
-  if (!historyList) return;
   const itemText = `${foreign} ${symbol}`;
   const bsText = `${bs} Bs`;
   if (history.length > 0 && history[0].foreign === itemText && history[0].bs === bsText) return;
   
   history.unshift({ foreign: itemText, bs: bsText });
-  if (history.length > 3) history.pop();
+  if (history.length > 4) history.pop();
+  
+  localStorage.setItem('calc_bcv_history', JSON.stringify(history));
+  renderHistoryUI();
+}
+
+function renderHistoryUI() {
+  if (!historyList) return;
+  if (history.length === 0) {
+    historyList.innerHTML = '<div class="history-item" style="justify-content:center; color:#9ca3af;">Sin historial</div>';
+    return;
+  }
   historyList.innerHTML = history.map(i => `<div class="history-item"><span>${i.foreign}</span><span class="history-val">${i.bs}</span></div>`).join('');
 }
 
-// Generar reporte para compartir en WhatsApp
+// Generar reporte y copiar al portapapeles
 function shareReport() {
-  const fVal = (foreignInput && foreignInput.value) ? foreignInput.value : '0.00';
-  const bVal = (bsInput && bsInput.value) ? bsInput.value : '0.00';
+  const fVal = (foreignInput && foreignInput.value) ? formatNumber(foreignInput.value) : '0,00';
+  const bVal = (bsInput && bsInput.value) ? formatNumber(bsInput.value) : '0,00';
   const sym = currencyConfig[currentCurrency].symbol;
+  const tasaTipo = isCustomRateActive ? "*(Tasa Personalizada)*" : "*(Tasa Oficial BCV - 02/11/2026)*";
   
-  navigator.clipboard.writeText(`📝 *CalcBCV - Cotización*\n\n💵 *${fVal} ${sym}* = *${bVal} Bs*\n🏦 *Tasa Oficial:* ${rates[currentCurrency].toFixed(2)} Bs por ${sym}`);
-  showToast("Reporte copiado para WhatsApp");
+  const reportText = `📝 *CalcBCV - Cotización*\n\n💵 *${fVal} ${sym}* = *${bVal} Bs*\n🏦 ${tasaTipo}: ${formatNumber(rates[currentCurrency])} Bs por ${sym}`;
+  
+  navigator.clipboard.writeText(reportText).then(() => {
+    showToast("¡Reporte copiado! Pégalo en WhatsApp");
+  }).catch(err => {
+    const textArea = document.createElement("textarea");
+    textArea.value = reportText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+    showToast("¡Reporte copiado con éxito!");
+  });
 }
 
-// Renderiza los valores en las cajitas inferiores de la interfaz
+// Activar Tasa Personalizada
+function activarTasaPersonalizada(code) {
+  const nuevaTasa = prompt(`Introduce la tasa personalizada para ${currencyConfig[code].name}:`, rates[code]);
+  if (nuevaTasa !== null && !isNaN(nuevaTasa) && nuevaTasa.trim() !== "") {
+    rates[code] = parseFloat(nuevaTasa);
+    isCustomRateActive = true;
+    setCurrency(code);
+    showToast(`Tasa de ${code} modificada temporalmente`);
+    renderRatesUI();
+    toggleCustomAlert(true);
+  }
+}
+
+// Mostrar alerta visual de tasa personalizada activa
+function toggleCustomAlert(show) {
+  if (customAlert) {
+    if (show || isCustomRateActive) {
+      customAlert.style.display = 'block';
+    } else {
+      customAlert.style.display = 'none';
+    }
+  }
+}
+
+// Render UI
 function renderRatesUI() {
   const usdEl = document.getElementById('display-usd-rate');
   const eurEl = document.getElementById('display-eur-rate');
@@ -132,27 +202,28 @@ function renderRatesUI() {
   const tryEl = document.getElementById('display-try-rate');
   const rubEl = document.getElementById('display-rub-rate');
 
-  if (usdEl) usdEl.innerText = "Bs. " + rates.USD.toFixed(2);
-  if (eurEl) eurEl.innerText = "Bs. " + rates.EUR.toFixed(2);
-  if (cnyEl) cnyEl.innerText = "Bs. " + rates.CNY.toFixed(2);
-  if (tryEl) tryEl.innerText = "Bs. " + rates.TRY.toFixed(2);
-  if (rubEl) rubEl.innerText = "Bs. " + rates.RUB.toFixed(2);
+  if (usdEl) usdEl.innerText = "Bs. " + formatNumber(rates.USD) + (rates.USD !== baseRates.USD ? " *" : "");
+  if (eurEl) eurEl.innerText = "Bs. " + formatNumber(rates.EUR) + (rates.EUR !== baseRates.EUR ? " *" : "");
+  if (cnyEl) cnyEl.innerText = "Bs. " + formatNumber(rates.CNY) + (rates.CNY !== baseRates.CNY ? " *" : "");
+  if (tryEl) tryEl.innerText = "Bs. " + formatNumber(rates.TRY) + (rates.TRY !== baseRates.TRY ? " *" : "");
+  if (rubEl) rubEl.innerText = "Bs. " + formatNumber(rates.RUB) + (rates.RUB !== baseRates.RUB ? " *" : "");
 }
 
-// Refrescar tasas y actualizar la hora de actualización
 function fetchAllRates(isManual = false) {
   const icon = document.getElementById('refresh-icon');
   if (isManual && icon) { 
     icon.classList.add('refresh-spin'); 
-    showToast("Tasas actualizadas"); 
+    rates = { ...baseRates }; 
+    isCustomRateActive = false;
+    toggleCustomAlert(false);
+    showToast("Tasas oficiales restauradas"); 
   }
   
-  // Dibuja las tasas en pantalla
   renderRatesUI();
   recalculateBs();
   
   if (updateTime) {
-    updateTime.innerText = "Act: " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    updateTime.innerText = "02/11/2026";
   }
   
   if (isManual && icon) {
@@ -160,7 +231,6 @@ function fetchAllRates(isManual = false) {
   }
 }
 
-// Cambio de tema Claro / Oscuro
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
   const icon = document.getElementById('theme-icon');
@@ -170,7 +240,6 @@ function toggleTheme() {
   }
 }
 
-// Copiar valores individuales
 function copyValue(id) {
   const input = document.getElementById(id);
   if (input && input.value) { 
@@ -179,7 +248,6 @@ function copyValue(id) {
   }
 }
 
-// Mostrar notificaciones Toast en pantalla
 function showToast(msg) {
   if (!toast) return;
   toast.innerText = msg; 
@@ -187,8 +255,25 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
-// Cargar inmediatamente al iniciar la app
+// Inicialización
 function initApp() {
+  const savedCurrency = localStorage.getItem('calc_bcv_currency');
+  if (savedCurrency && rates[savedCurrency]) {
+    currentCurrency = savedCurrency;
+    if (bcvButtonText) bcvButtonText.innerText = currencyConfig[savedCurrency].name;
+    if (foreignSymbol) foreignSymbol.innerText = currencyConfig[savedCurrency].symbol;
+  }
+
+  const savedHistory = localStorage.getItem('calc_bcv_history');
+  if (savedHistory) {
+    try {
+      history = JSON.parse(savedHistory);
+      renderHistoryUI();
+    } catch(e) {
+      history = [];
+    }
+  }
+
   fetchAllRates(false);
 }
 
